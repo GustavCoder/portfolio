@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type Speed Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 2rem;
+            color: #ff9a8b;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .stat-box {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-box p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .stat-box h2 {
+            font-size: 1.5rem;
+            margin-top: 0.2rem;
+            color: #fff;
+        }
+
+        .sentence-display {
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: transform 0.3s ease;
+            perspective: 1000px;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            overflow-wrap: break-word;
+            line-height: 1.6;
+            flex-wrap: wrap;
+        }
+
+        .sentence-display.pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .word-container {
+            display: inline-flex;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+
+        .word-container.current {
+            border-bottom: 2px solid #ff9a8b;
+        }
+
+        .letter {
+            display: inline-block;
+            transition: all 0.2s ease;
+            transform-origin: center;
+        }
+
+        .letter.correct {
+            color: #4cd137;
+            text-shadow: 0 0 5px rgba(76, 209, 55, 0.5);
+        }
+
+        .letter.incorrect {
+            color: #e84118;
+            text-shadow: 0 0 5px rgba(232, 65, 24, 0.5);
+        }
+
+        .letter.pending {
+            color: #dcdde1;
+        }
+
+        .input-area {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-area input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-area input:focus {
+            border-color: #ff9a8b;
+            box-shadow: 0 0 15px rgba(255, 154, 139, 0.3);
+        }
+
+        .input-area input.incorrect {
+            border-color: #e84118;
+            box-shadow: 0 0 15px rgba(232, 65, 24, 0.3);
+        }
+
+        .input-area input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .result {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ff9a8b;
+        }
+
+        .result p {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .result span {
+            font-weight: 600;
+            color: #4cd137;
+        }
+
+        .restart-btn {
+            display: block;
+            margin: 1.5rem auto 0;
+            padding: 0.8rem 2rem;
+            background: #ff9a8b;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 154, 139, 0.3);
+        }
+
+        .restart-btn:hover {
+            background: #ff8c7a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 154, 139, 0.4);
+        }
+
+        .restart-btn:active {
+            transform: translateY(1px);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            .sentence-display {
+                font-size: 1.2rem;
+                min-height: 100px;
+                padding: 0.8rem;
+            }
+
+            .stat-box h2 {
+                font-size: 1.3rem;
+            }
+
+            .input-area input {
+                padding: 0.8rem 1.2rem;
+                font-size: 1rem;
+            }
+
+            .result h3 {
+                font-size: 1.3rem;
+            }
+
+            .result p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Type Speed Test</h1>
+        <div class="stats">
+            <div class="stat-box">
+                <p>Time</p>
+                <h2 id="time">0s</h2>
+            </div>
+            <div class="stat-box">
+                <p>WPM</p>
+                <h2 id="wpm">0</h2>
+            </div>
+            <div class="stat-box">
+                <p>Accuracy</p>
+                <h2 id="accuracy">100%</h2>
+            </div>
+        </div>
+
+        <div class="sentence-display" id="sentence-display"></div>
+
+        <div class="input-area">
+            <input type="text" id="word-input" placeholder="Type the current word here to start..." autocomplete="off">
+        </div>
+
+        <div class="result" id="result">
+            <h3>Results</h3>
+            <p>WPM: <span id="result-wpm">0</span></p>
+            <p>Accuracy: <span id="result-accuracy">100%</span></p>
+            <p>Time: <span id="result-time">0s</span></p>
+            <button class="restart-btn" id="restart-btn">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sentences = [
+                "The quick brown fox jumps over the lazy dog.",
+                "Life is like riding a bicycle to keep your balance you must keep moving.",
+                "Be yourself everyone else is already taken.",
+                "The only way to do great work is to love what you do.",
+                "In the end we will remember not the words of our enemies but the silence of our friends.",
+                "Success is not final failure is not fatal it is the courage to continue that counts.",
+                "The future belongs to those who believe in the beauty of their dreams.",
+                "Happiness is not something ready made it comes from your own actions.",
+                "The best way to predict the future is to create it.",
+                "It does not matter how slowly you go as long as you do not stop.",
+                "The purpose of our lives is to be happy and spread happiness around us.",
+                "The greatest glory in living lies not in never falling but in rising every time we fall.",
+                "The way to get started is to quit talking and begin doing.",
+                "Education is the most powerful weapon which you can use to change the world.",
+                "Life is what happens when you are busy making other plans.",
+                "All our dreams can come true if we have the courage to pursue them.",
+                "Do what you can, with what you have, where you are.",
+                "Opportunities don't happen, you create them.",
+                "Don't watch the clock; do what it does-keep going.",
+                "Act as if what you do makes a difference. It does.",
+                "Success usually comes to those who are too busy to be looking for it.",
+                "It always seems impossible until it's done.",
+                "Dream big and dare to fail.",
+                "You miss 100% of the shots you don't take.",
+                "Start where you are. Use what you have. Do what you can.",
+                "Your time is limited, so don't waste it living someone else's life.",
+                "Small steps in the right direction can turn out to be the biggest step of your life.",
+                "Failure is simply the opportunity to begin again, this time more intelligently.",
+                "Every moment is a fresh beginning.",
+                "Don't count the days, make the days count.",
+                "Strive not to be a success, but rather to be of value."
+            ];
+
+            const sentenceDisplay = document.getElementById('sentence-display');
+            const wordInput = document.getElementById('word-input');
+            const timeEl = document.getElementById('time');
+            const wpmEl = document.getElementById('wpm');
+            const accuracyEl = document.getElementById('accuracy');
+            const resultEl = document.getElementById('result');
+            const resultWpmEl = document.getElementById('result-wpm');
+            const resultAccuracyEl = document.getElementById('result-accuracy');
+            const resultTimeEl = document.getElementById('result-time');
+            const restartBtn = document.getElementById('restart-btn');
+
+            let currentSentence = '';
+            let sentenceWords = [];
+            let currentWordIndex = 0;
+            let timeStarted = false;
+            let startTime = 0;
+            let endTime = 0;
+            let totalErrors = 0;
+            let correctWords = 0;
+            let totalCharactersTyped = 0;
+            let correctCharacters = 0;
+            let timer;
+            let wpmTimer;
+            let currentWordCorrect = true;
+
+            // Initialize the game
+            init();
+
+            function init() {
+                resetGame();
+                setNewSentence();
+                timeEl.textContent = '0s';
+                wpmEl.textContent = '0';
+                accuracyEl.textContent = '100%';
+                resultEl.classList.remove('show');
+            }
+
+            function resetGame() {
+                timeStarted = false;
+                startTime = 0;
+                endTime = 0;
+                totalErrors = 0;
+                correctWords = 0;
+                currentWordIndex = 0;
+                totalCharactersTyped = 0;
+                correctCharacters = 0;
+                currentWordCorrect = true;
+                clearInterval(timer);
+                clearInterval(wpmTimer);
+                wordInput.value = '';
+                wordInput.disabled = false;
+                wordInput.classList.remove('incorrect');
+                wordInput.focus();
+            }
+
+            function setNewSentence() {
+                const randomIndex = Math.floor(Math.random() * sentences.length);
+                currentSentence = sentences[randomIndex];
+                sentenceWords = currentSentence.split(' ');
+                
+                sentenceDisplay.innerHTML = '';
+                sentenceDisplay.classList.add('pulse');
+                
+                setTimeout(() => {
+                    sentenceDisplay.classList.remove('pulse');
+                }, 500);
+
+                // Create spans for each word and its letters
+                sentenceWords.forEach((word, wordIndex) => {
+                    const wordContainer = document.createElement('div');
+                    wordContainer.className = wordIndex === 0 ? 'word-container current' : 'word-container';
+                    wordContainer.id = `word-${wordIndex}`;
+                    
+                    // Split word into letters
+                    word.split('').forEach((letter, letterIndex) => {
+                        const letterSpan = document.createElement('span');
+                        letterSpan.textContent = letter;
+                        letterSpan.className = 'letter pending';
+                        letterSpan.id = `word-${wordIndex}-letter-${letterIndex}`;
+                        wordContainer.appendChild(letterSpan);
+                    });
+                    
+                    sentenceDisplay.appendChild(wordContainer);
+                });
+            }
+
+            function startTimer() {
+                timeStarted = true;
+                startTime = new Date().getTime();
+                
+                timer = setInterval(() => {
+                    const currentTime = Math.floor((new Date().getTime() - startTime) / 1000);
+                    timeEl.textContent = `${currentTime}s`;
+                }, 1000);
+                
+                // WPM calculation timer (updates every 500ms)
+                wpmTimer = setInterval(() => {
+                    updateWPM();
+                }, 500);
+            }
+            
+            function updateWPM() {
+                if (!timeStarted) return;
+                
+                const currentTime = (new Date().getTime() - startTime) / 1000;
+                if (currentTime > 0) {
+                    // Standard WPM calculation: (characters typed / 5) / minutes
+                    const timeFraction = currentTime / 60; // Convert seconds to minutes
+                    const wpm = Math.round((totalCharactersTyped / 5) / timeFraction);
+                    wpmEl.textContent = wpm;
+                }
+            }
+
+            function checkWordProgress(inputValue) {
+                const currentWord = sentenceWords[currentWordIndex];
+                const wordContainer = document.getElementById(`word-${currentWordIndex}`);
+                
+                // Reset all letters to pending
+                const letterElements = wordContainer.querySelectorAll('.letter');
+                letterElements.forEach(letter => letter.className = 'letter pending');
+                
+                // Check each letter of the input
+                let allCorrect = true;
+                for (let i = 0; i < inputValue.length; i++) {
+                    if (i < currentWord.length) {
+                        const letterEl = document.getElementById(`word-${currentWordIndex}-letter-${i}`);
+                        if (inputValue[i] === currentWord[i]) {
+                            letterEl.className = 'letter correct';
+                        } else {
+                            letterEl.className = 'letter incorrect';
+                            allCorrect = false;
+                        }
+                    } else {
+                        // Input is longer than word
+                        allCorrect = false;
+                    }
+                }
+                
+                // Check if word is complete and correct
+                currentWordCorrect = (inputValue === currentWord);
+                
+                // Visual feedback for the input field
+                if (inputValue.length > 0 && !allCorrect) {
+                    wordInput.classList.add('incorrect');
+                } else {
+                    wordInput.classList.remove('incorrect');
+                }
+                
+                return allCorrect;
+            }
+
+            function submitWord() {
+                const inputValue = wordInput.value.trim();
+                if (inputValue === '') return;
+                
+                const currentWord = sentenceWords[currentWordIndex];
+                const wordContainer = document.getElementById(`word-${currentWordIndex}`);
+                
+                // Count characters typed for WPM calculation
+                totalCharactersTyped += inputValue.length + 1; // +1 for space
+                
+                // Check if the word is correct
+                if (inputValue === currentWord) {
+                    correctWords++;
+                    correctCharacters += currentWord.length + 1; // +1 for space
+                } else {
+                    totalErrors++;
+                }
+                
+                // Remove current highlight
+                wordContainer.classList.remove('current');
+                
+                // Move to next word
+                currentWordIndex++;
+                
+                // Update accuracy
+                const accuracy = Math.floor(correctWords / (currentWordIndex) * 100);
+                accuracyEl.textContent = `${accuracy}%`;
+                
+                if (currentWordIndex < sentenceWords.length) {
+                    // Highlight next word
+                    const nextWordContainer = document.getElementById(`word-${currentWordIndex}`);
+                    nextWordContainer.classList.add('current');
+                    
+                    // Clear input for next word
+                    wordInput.value = '';
+                    wordInput.classList.remove('incorrect');
+                    currentWordCorrect = true;
+                } else {
+                    // Sentence completed
+                    endTime = new Date().getTime();
+                    clearInterval(timer);
+                    clearInterval(wpmTimer);
+                    
+                    // Calculate final stats
+                    const timeInSeconds = (endTime - startTime) / 1000;
+                    const finalWpm = Math.round((totalCharactersTyped / 5) / (timeInSeconds / 60));
+                    
+                    // Display results
+                    resultWpmEl.textContent = finalWpm;
+                    resultAccuracyEl.textContent = `${accuracy}%`;
+                    resultTimeEl.textContent = `${timeInSeconds.toFixed(2)}s`;
+                    resultEl.classList.add('show');
+                    
+                    // Disable input
+                    wordInput.disabled = true;
+                    
+                    // Update stats display
+                    timeEl.textContent = `${timeInSeconds.toFixed(1)}s`;
+                    wpmEl.textContent = finalWpm;
+                }
+            }
+            
+            // Event listeners
+            wordInput.addEventListener('keydown', (e) => {
+                if (!timeStarted && e.key !== 'Tab') {
+                    startTimer();
+                }
+                
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    
+                    // Only allow submission if the word is correct
+                    if (currentWordCorrect && wordInput.value.trim() === sentenceWords[currentWordIndex]) {
+                        submitWord();
+                    } else if (e.key === ' ' && wordInput.value.trim() !== '') {
+                        // Flash the input field if trying to submit incorrect word
+                        wordInput.classList.add('incorrect');
+                        setTimeout(() => {
+                            wordInput.classList.remove('incorrect');
+                            setTimeout(() => {
+                                wordInput.classList.add('incorrect');
+                            }, 100);
+                        }, 100);
+                    }
+                }
+            });
+            
+            wordInput.addEventListener('input', () => {
+                if (!timeStarted && wordInput.value.length > 0) {
+                    startTimer();
+                }
+                
+                const inputValue = wordInput.value.trim();
+                checkWordProgress(inputValue);
+                
+                // Auto-submit if word is correct
+                if (inputValue === sentenceWords[currentWordIndex]) {
+                    currentWordCorrect = true;
+                }
+            });
+            
+            restartBtn.addEventListener('click', init);
+        });
+    </script>
+</body>
+</html>
