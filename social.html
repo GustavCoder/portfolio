@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Analytics Dashboard</title>
+    <style>
+        :root {
+            --background: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #ff0050;
+            --secondary: #00f2ea;
+            --text: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent: #2d2d2d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 28px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            max-width: 500px;
+            width: 100%;
+            background-color: var(--accent);
+            border-radius: 50px;
+            padding: 8px 20px;
+            margin: 0 20px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 16px;
+            padding: 8px;
+        }
+        
+        .search-bar button {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 50px;
+            color: var(--text);
+            padding: 8px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 80, 0.3);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .search-bar {
+                margin: 0;
+            }
+        }
+        
+        .profile-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 4px solid var(--primary);
+        }
+        
+        .profile-details {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-details h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .profile-details p {
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-item .number {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+        }
+        
+        .stat-item .label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .analytics-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+        }
+        
+        .chart-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-title {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: var(--text);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+        
+        .content-section {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            grid-column: span 2;
+        }
+        
+        .content-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .content-item {
+            background-color: var(--accent);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .content-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content-thumbnail {
+            width: 100%;
+            height: 0;
+            padding-bottom: 177%; /* 9:16 aspect ratio */
+            background-color: #333;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-info {
+            padding: 10px;
+        }
+        
+        .content-info h4 {
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .content-stats {
+            display: flex;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .content-stats div {
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--accent);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #dashboard-content {
+            display: none;
+            width: 100%;
+        }
+        
+        .welcome-screen {
+            text-align: center;
+            padding: 50px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .welcome-screen h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome-screen h1 {
+            font-size: 15px;
+            margin-bottom: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .welcome-screen p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        
+        .pulsate {
+            animation: pulsate 2s ease-out infinite;
+            opacity: 0.5;
+        }
+        
+        @keyframes pulsate {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16.708 0.027C18.556 0 20.396 0.009 22.24 0C22.371 2.089 23.155 4.237 24.736 5.702C26.316 7.185 28.507 7.863 30.677 8.054V13.396C28.732 13.369 26.773 12.981 25.017 12.172C24.175 11.818 23.386 11.371 22.636 10.863C22.627 14.827 22.645 18.786 22.618 22.75C22.518 24.679 21.837 26.59 20.684 28.174C18.846 30.811 15.644 32.419 12.385 32C9.856 31.721 7.41 30.5 5.703 28.584C3.138 25.864 2.242 21.543 3.576 17.955C4.782 14.664 7.727 12.17 11.191 11.637C11.2 13.646 11.01 15.719 11.136 17.701C9.386 18.43 7.944 20.126 7.807 22.019C7.625 23.827 8.47 25.733 10.028 26.695C12.338 28.108 15.742 27.419 17.16 25.132C17.758 24.11 18.026 22.904 18 21.714C18.035 16.438 17.991 11.166 18.017 5.894C17.584 5.893 17.149 5.891 16.717 5.885C16.708 3.932 16.717 1.979 16.708 0.027Z" fill="url(#paint0_linear)"/>
+                    <defs>
+                        <linearGradient id="paint0_linear" x1="2.9938" y1="16" x2="30.677" y2="16" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#FF0050"/>
+                            <stop offset="1" stop-color="#00F2EA"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>TikTok Analytics</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="username-input" placeholder="Enter TikTok username..." />
+                <button id="search-btn">Analyze</button>
+            </div>
+        </header>
+        
+        <div class="welcome-screen" id="welcome-screen">
+            <h2>Track Your TikTok Analytics</h2>
+            <p>Enter any TikTok username to discover detailed analytics and insights. Monitor growth trends, engagement metrics, and top-performing content all in one dashboard.</p>
+            <p class="pulsate">Enter a username above to get started</p>
+            <h1>This website displays false data for demonstration purposes.</h1>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading analytics data...</p>
+        </div>
+        
+        <div id="dashboard-content">
+            <div class="dashboard">
+                <div class="profile-card">
+                    <img src="" alt="Profile Picture" class="profile-image" id="profile-image">
+                    <div class="profile-details">
+                        <h2 id="profile-name">Username</h2>
+                        <p id="profile-handle">@username</p>
+                        <p id="profile-bio">Bio text will appear here</p>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="number" id="followers">0</div>
+                            <div class="label">Followers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="following">0</div>
+                            <div class="label">Following</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="likes">0</div>
+                            <div class="label">Likes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="number" id="posts">0</div>
+                            <div class="label">Posts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="engagement">0%</div>
+                            <div class="label">Engagement</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="avg-views">0</div>
+                            <div class="label">Avg. Views</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analytics-section">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Follower Growth</h3>
+                        <div class="chart-container">
+                            <canvas id="follower-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3 class="chart-title">Engagement Rate</h3>
+                        <div class="chart-container">
+                            <canvas id="engagement-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3 class="chart-title">Content Performance</h3>
+                        <div class="chart-container">
+                            <canvas id="performance-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3 class="chart-title">Audience Demographics</h3>
+                        <div class="chart-container">
+                            <canvas id="demographics-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="content-section">
+                        <h3 class="chart-title">Top Performing Content</h3>
+                        <div class="content-list" id="content-list">
+                            <!-- Content items will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchBtn = document.getElementById('search-btn');
+            const usernameInput = document.getElementById('username-input');
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const loadingScreen = document.getElementById('loading');
+            const dashboardContent = document.getElementById('dashboard-content');
+            
+            // Demo data for charts
+            let followerData = [1200, 1500, 2000, 3500, 5000, 7500, 12000];
+            let engagementData = [4.2, 5.8, 5.1, 6.3, 7.2, 6.8, 7.5];
+            let performanceData = {
+                labels: ['Video', 'Duets', 'Stitches', 'Live', 'Photos'],
+                data: [65, 15, 10, 5, 5]
+            };
+            let demographicsData = {
+                labels: ['13-17', '18-24', '25-34', '35-44', '45+'],
+                data: [15, 40, 25, 15, 5]
+            };
+            
+            // Sample content items
+            const sampleContent = [
+                { views: '2.4M', likes: '350K', comments: '5.2K', shares: '120K', title: 'My viral dance routine #dance #viral' },
+                { views: '1.2M', likes: '240K', comments: '3.5K', shares: '80K', title: 'Trying this trend #trend #challenge' },
+                { views: '950K', likes: '180K', comments: '2.8K', shares: '45K', title: 'Day in my life #dayinmylife' },
+                { views: '750K', likes: '120K', comments: '1.9K', shares: '30K', title: 'Story time #storytime #funny' },
+                { views: '600K', likes: '95K', comments: '1.5K', shares: '25K', title: 'How to make this recipe #cooking' },
+                { views: '480K', likes: '85K', comments: '1.2K', shares: '18K', title: 'Makeup tutorial #beauty #makeup' }
+            ];
+            
+            // Initialize charts
+            function initCharts() {
+                // Follower Growth Chart
+                const followerCtx = document.getElementById('follower-chart').getContext('2d');
+                const followerChart = new Chart(followerCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        datasets: [{
+                            label: 'Followers',
+                            data: followerData,
+                            borderColor: '#ff0050',
+                            backgroundColor: 'rgba(255, 0, 80, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#b3b3b3'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#b3b3b3'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Engagement Rate Chart
+                const engagementCtx = document.getElementById('engagement-chart').getContext('2d');
+                const engagementChart = new Chart(engagementCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        datasets: [{
+                            label: 'Engagement Rate (%)',
+                            data: engagementData,
+                            borderColor: '#00f2ea',
+                            backgroundColor: 'rgba(0, 242, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#b3b3b3'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#b3b3b3'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Content Performance Chart
+                const performanceCtx = document.getElementById('performance-chart').getContext('2d');
+                const performanceChart = new Chart(performanceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: performanceData.labels,
+                        datasets: [{
+                            data: performanceData.data,
+                            backgroundColor: [
+                                '#ff0050',
+                                '#00f2ea',
+                                '#8a2be2',
+                                '#ffa500',
+                                '#1db954'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    color: '#b3b3b3',
+                                    font: {
+                                        size: 10
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+                
+                // Demographics Chart
+                const demographicsCtx = document.getElementById('demographics-chart').getContext('2d');
+                const demographicsChart = new Chart(demographicsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: demographicsData.labels,
+                        datasets: [{
+                            label: 'Audience Age',
+                            data: demographicsData.data,
+                            backgroundColor: [
+                                '#ff0050',
+                                '#ff3370',
+                                '#ff6690',
+                                '#ff99b0',
+                                '#ffccd0'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#b3b3b3'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#b3b3b3'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Populate content list
+            function populateContentList() {
+                const contentList = document.getElementById('content-list');
+                contentList.innerHTML = '';
+                
+                sampleContent.forEach(item => {
+                    const contentItem = document.createElement('div');
+                    contentItem.className = 'content-item';
+                    
+                    // Generate a random color for the thumbnail
+                    const r = Math.floor(Math.random() * 100) + 100;
+                    const g = Math.floor(Math.random() * 100) + 100;
+                    const b = Math.floor(Math.random() * 100) + 100;
+                    
+                    contentItem.innerHTML = `
+                        <div class="content-thumbnail" style="background-color: rgb(${r}, ${g}, ${b})"></div>
+                        <div class="content-info">
+                            <h4>${item.title}</h4>
+                            <div class="content-stats">
+                                <div>${item.views} views</div>
+                                <div>${item.likes} likes</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    contentList.appendChild(contentItem);
+                });
+            }
+            
+            // Format numbers for display
+            function formatNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                }
+                if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num;
+            }
+            
+            // Handle search
+            searchBtn.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                if (!username) return;
+                
+                // Show loading screen
+                welcomeScreen.style.display = 'none';
+                loadingScreen.style.display = 'block';
+                dashboardContent.style.display = 'none';
+                
+                // Simulate API call delay
+                setTimeout(() => {
+                    // Hide loading, show dashboard
+                    loadingScreen.style.display = 'none';
+                    dashboardContent.style.display = 'block';
+                    
+                    // Update profile info with mock data based on username
+                    document.getElementById('profile-name').textContent = username;
+                    document.getElementById('profile-handle').textContent = '@' + username.toLowerCase().replace(/\s+/g, '');
+                    document.getElementById('profile-bio').textContent = 'Digital creator | Sharing content about life and creativity | Business inquiries: ' + username.toLowerCase() + '@email.com';
+                    
+                    // Create a vibrant colored placeholder for profile image
+                    const profileImage = document.getElementById('profile-image');
+                    profileImage.src = '';
+                    profileImage.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                    
+                    // Generate random stats based on username length
+                    const seed = username.length;
+                    const followers = Math.floor(100000 + (seed * 50000));
+                    const following = Math.floor(500 + (seed * 100));
+                    const likes = Math.floor(followers * (2 + Math.random()));
+                    const posts = Math.floor(100 + (seed * 20));
+                    const engagement = (5 + (Math.random() * 5)).toFixed(1);
+                    const avgViews = Math.floor(followers * (0.2 + (Math.random() * 0.4)));
+                    
+                    // Update stats
+                    document.getElementById('followers').textContent = formatNumber(followers);
+                    document.getElementById('following').textContent = formatNumber(following);
+                    document.getElementById('likes').textContent = formatNumber(likes);
+                    document.getElementById('posts').textContent = formatNumber(posts);
+                    document.getElementById('engagement').textContent = engagement + '%';
+                    document.getElementById('avg-views').textContent = formatNumber(avgViews);
+                    
+                    // Generate new chart data based on username
+                    const seed2 = username.charCodeAt(0) % 10;
+                    
+                    followerData = Array(7).fill(0).map((_, i) => 
+                        Math.floor(followers * (0.1 + (i * 0.15)) * (0.8 + (seed2 / 10)))
+                    );
+                    
+                    engagementData = Array(7).fill(0).map((_, i) => 
+                        (3 + (i * 0.5) + (Math.random() * 2) + (seed2 / 5)).toFixed(1)
+                    );
+                    
+                    // Initialize charts and content
+                    initCharts();
+                    populateContentList();
+                    
+                }, 2000);
+            });
+            
+            // Allow pressing Enter to search
+            usernameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

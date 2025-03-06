@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce KPI Dashboard</title>
+  <style>
+    :root {
+      --primary-bg: #1a1b30;
+      --card-bg: #252645;
+      --text-primary: #ffffff;
+      --text-secondary: #a5a8c7;
+      --accent-green: #3cd278;
+      --accent-blue: #32b7f1;
+      --accent-yellow: #f1ae32;
+    }
+
+    /* Light mode variables */
+    .light-mode {
+      --primary-bg: #f4f4f4;
+      --card-bg: #ffffff;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-primary);
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+    }
+    
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+    
+    .big-number {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .timeframe {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .trend {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    
+    .trend-up {
+      color: var(--accent-green);
+    }
+    
+    .trend-down {
+      color: #ff5c5c;
+    }
+    
+    .trend-arrow {
+      margin-right: 5px;
+    }
+    
+    .trend-text {
+      margin-right: 5px;
+    }
+    
+    .trend-compare {
+      color: var(--text-secondary);
+    }
+    
+    .chart-container {
+      width: 100%;
+      height: 150px;
+      margin-top: 15px;
+      position: relative;
+    }
+    
+    .bar-chart-container {
+      margin-top: 15px;
+    }
+    
+    .bar-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .bar-label {
+      flex: 1;
+    }
+    
+    .bar-track {
+      flex: 3;
+      background: rgba(255, 255, 255, 0.1);
+      height: 8px;
+      border-radius: 4px;
+      margin: 0 15px;
+      position: relative;
+      align-self: center;
+    }
+
+    .light-mode .bar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    
+    .bar-progress {
+      position: absolute;
+      height: 100%;
+      background-color: var(--accent-blue);
+      border-radius: 4px;
+    }
+    
+    .bar-value {
+      flex: 0.5;
+      text-align: right;
+    }
+    
+    .table {
+      width: 100%;
+      margin-top: 15px;
+    }
+    
+    .table-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .light-mode .table-row {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .gauge-container {
+      position: relative;
+      height: 120px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .gauge {
+      width: 150px;
+      height: 75px;
+      border-radius: 75px 75px 0 0;
+      background: conic-gradient(
+        var(--accent-green) 0% 30%,
+        #ffffff 30% 45%,
+        #ff5c5c 45% 100%
+      );
+      clip-path: polygon(0 100%, 50% 0, 100% 100%);
+      transform: rotate(180deg);
+      position: relative;
+    }
+    
+    .gauge-center {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 65px;
+      background-color: var(--card-bg);
+      border-radius: 65px 65px 0 0;
+      transition: background-color 0.3s;
+    }
+    
+    .gauge-needle {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      height: 70px;
+      width: 2px;
+      background-color: var(--text-primary);
+      transform-origin: bottom center;
+      z-index: 10;
+      transition: background-color 0.3s;
+    }
+    
+    .gauge-value {
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      font-weight: 600;
+    }
+    
+    .gauge-min,
+    .gauge-max {
+      position: absolute;
+      bottom: 0;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    
+    .gauge-min {
+      left: 30px;
+    }
+    
+    .gauge-max {
+      right: 30px;
+    }
+    
+    svg.chart {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .dashboard-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .dashboard-icon {
+      background-color: var(--accent-green);
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .right-controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .timestamp {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    
+    .metric-card {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    
+    .metric-label {
+      color: var(--text-secondary);
+    }
+    
+    .metric-value {
+      font-weight: 500;
+    }
+
+    .sub-title {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    /* Theme Toggle Switch */
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--card-bg);
+      transition: 0.4s;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+      z-index: 2;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(30px);
+    }
+
+    .slider .sun, .slider .moon {
+      font-size: 14px;
+      z-index: 1;
+    }
+
+    .slider .sun {
+      margin-right: 6px;
+    }
+
+    .slider .moon {
+      margin-left: 6px;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .new-notification {
+        position: absolute;
+        top: 100px;
+        right: 226px;
+        background: var(--accent-blue);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+      }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="dashboard-title">
+      <div class="dashboard-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+      </div>
+      <h1 id="dashboardTitle">E-commerce KPI Dashboard</h1>
+    </div>
+    <div class="right-controls">
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="slider">
+          <span class="sun">☀️</span>
+          <span class="moon">🌙</span>
+        </span>
+      </label>
+      <div class="timestamp" id="current-time">18:08</div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <!-- Total Sales Card -->
+    <div class="card">
+    <div class="notification">Updated</div>
+      <h2 class="card-title">Total sales</h2>
+      <div class="big-number">$1,254</div>
+      <div class="timeframe">Today</div>
+      <div class="trend">
+        <span class="trend-arrow trend-up">▲</span>
+        <span class="trend-text trend-up">$229</span>
+        <span class="trend-compare">vs same day last week</span>
+      </div>
+      <h3 class="sub-title">Sales volume</h3>
+      <div class="chart-container">
+        <canvas id="salesOverviewChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Orders Card -->
+    <div class="card">
+      <h2 class="card-title">Orders</h2>
+      <div class="big-number">43</div>
+      <div class="timeframe">Today</div>
+      <div class="trend">
+        <span class="trend-arrow trend-up">▲</span>
+        <span class="trend-text trend-up">8</span>
+        <span class="trend-compare">vs same day last week</span>
+      </div>
+      <h3 class="sub-title">Order volume</h3>
+      <div class="chart-container">
+        <canvas id="ordersChart" class="chart"></canvas>
+      </div>
+      <h3 class="sub-title" style="margin-top: 20px;">Orders by channel</h3>
+      <div class="bar-chart-container">
+        <div class="bar-item">
+          <div class="bar-label">Marketplace</div>
+          <div class="bar-track">
+            <div class="bar-progress" style="width: 80%;"></div>
+          </div>
+          <div class="bar-value">123</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Shop</div>
+          <div class="bar-track">
+            <div class="bar-progress" style="width: 65%;"></div>
+          </div>
+          <div class="bar-value">102</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">Website</div>
+          <div class="bar-track">
+            <div class="bar-progress" style="width: 35%;"></div>
+          </div>
+          <div class="bar-value">55</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Net Profit Card -->
+    <div class="card">
+      <h2 class="card-title">Net profit</h2>
+      <div class="big-number">$11.27K</div>
+      <div class="timeframe">This month</div>
+      <div class="trend">
+        <span class="trend-arrow trend-up">▲</span>
+        <span class="trend-text trend-up">$2.02K</span>
+        <span class="trend-compare">vs last month</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="profitChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- P&L Statement Card -->
+    <div class="card">
+        <div class="new-notification">New</div>
+      <h2 class="card-title">P&L statement - last month</h2>
+      <div class="chart-container" style="height: 180px;">
+        <canvas id="plChart" class="chart"></canvas>
+      </div>
+      <div class="metric-card" style="margin-top: 15px;">
+        <div class="metric-label">Total costs</div>
+        <div class="metric-value">$4,331</div>
+      </div>
+    </div>
+
+    <!-- Sales by Channel Card -->
+    <div class="card">
+      <h2 class="card-title">Sales by channel</h2>
+      <div class="chart-container">
+        <canvas id="salesChannelChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Average Order Value Card -->
+    <div class="card">
+      <h2 class="card-title">Avg. order value</h2>
+      <div class="big-number">$202</div>
+      <div class="timeframe">This month</div>
+      <div class="chart-container">
+        <canvas id="aovChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Real-Time Analytics Card -->
+    <div class="card">
+      <h2 class="card-title">Real-Time Analytics</h2>
+      <div class="chart-container">
+        <canvas id="realTimeAnalyticsChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Product Performance Card -->
+    <div class="card">
+      <h2 class="card-title">Product Performance</h2>
+      <div class="chart-container">
+        <canvas id="productPerformanceChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Traffic Sources Card -->
+    <div class="card">
+      <h2 class="card-title">Traffic Sources</h2>
+      <div class="chart-container">
+        <canvas id="trafficSourcesChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Order Management Card -->
+    <div class="card">
+      <h2 class="card-title">Order Management</h2>
+      <div class="chart-container">
+        <canvas id="orderManagementChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Revenue Breakdown Card -->
+    <div class="card">
+      <h2 class="card-title">Revenue Breakdown</h2>
+      <div class="chart-container">
+        <canvas id="revenueBreakdownChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Abandoned Cart Tracking Card -->
+    <div class="card">
+      <h2 class="card-title">Abandoned Cart Tracking</h2>
+      <div class="chart-container">
+        <canvas id="abandonedCartChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Marketing Performance Card -->
+    <div class="card">
+      <h2 class="card-title">Marketing Performance</h2>
+      <div class="chart-container">
+        <canvas id="marketingPerformanceChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Inventory Management Card -->
+    <div class="card">
+      <h2 class="card-title">Inventory Management</h2>
+      <div class="chart-container">
+        <canvas id="inventoryManagementChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- User Roles Card -->
+    <div class="card">
+      <h2 class="card-title">User Roles & Permissions</h2>
+      <div class="chart-container">
+        <canvas id="userRolesChart" class="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Export & Reporting Card -->
+    <div class="card">
+      <h2 class="card-title">Export & Reporting</h2>
+      <div class="chart-container">
+        <canvas id="exportReportingChart" class="chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Update time
+    function updateTime() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      document.getElementById('current-time').textContent = hours + ':' + minutes;
+    }
+    updateTime();
+    setInterval(updateTime, 60000);
+
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('change', function() {
+      if (this.checked) {
+        document.body.classList.add('light-mode');
+        updateChartTheme('light');
+      } else {
+        document.body.classList.remove('light-mode');
+        updateChartTheme('dark');
+      }
+    });
+
+    function updateChartTheme(theme) {
+      // Update all charts with new theme colors
+      Chart.helpers.each(Chart.instances, function(instance) {
+        const chart = instance;
+        
+        // Set text color based on theme
+        chart.options.plugins.legend.labels.color = theme === 'light' ? '#333333' : '#ffffff';
+        chart.options.scales.x.ticks.color = theme === 'light' ? '#666666' : '#a5a8c7';
+        chart.options.scales.y.ticks.color = theme === 'light' ? '#666666' : '#a5a8c7';
+        
+        // Update chart
+        chart.update();
+      });
+    }
+
+    // Chart.js common options
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: '#ffffff'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#a5a8c7'
+          },
+          grid: {
+            display: false
+          }
+        },
+        y: {
+          ticks: {
+            color: '#a5a8c7'
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          }
+        }
+      }
+    };
+
+    // Chart data and initialization
+    const chartsData = [
+      {
+        ctx: document.getElementById('salesOverviewChart').getContext('2d'),
+        type: 'line',
+        data: {
+          labels: ['Last Week', 'This Week'],
+          datasets: [{
+            label: 'Sales Volume',
+            data: [800, 1254],
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: true,
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('ordersChart').getContext('2d'),
+        type: 'bar',
+        data: {
+          labels: ['Last Month', 'This Month'],
+          datasets: [{
+            label: 'Orders',
+            data: [30, 43],
+            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('profitChart').getContext('2d'),
+        type: 'doughnut',
+        data: {
+          labels: ['Net Profit', 'Expenses'],
+          datasets: [{
+            label: 'Profit Breakdown',
+            data: [11270, 5000],
+            backgroundColor: ['rgba(255, 206, 86, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('plChart').getContext('2d'),
+        type: 'bar',
+        data: {
+          labels: ['Total Costs', 'Total Revenue'],
+          datasets: [{
+            label: 'P&L Statement',
+            data: [4331, 12000],
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('salesChannelChart').getContext('2d'),
+        type: 'pie',
+        data: {
+          labels: ['Marketplace', 'Shop', 'Website'],
+          datasets: [{
+            label: 'Sales by Channel',
+            data: [123, 102, 55],
+            backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)'],
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('aovChart').getContext('2d'),
+        type: 'line',
+        data: {
+          labels: ['Last Month', 'This Month'],
+          datasets: [{
+            label: 'Average Order Value',
+            data: [180, 202],
+            borderColor: 'rgba(255, 206, 86, 1)',
+            fill: false,
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('realTimeAnalyticsChart').getContext('2d'),
+        type: 'line',
+        data: {
+          labels: ['Visitors', 'Active Carts', 'Recent Transactions'],
+          datasets: [{
+            label: 'Real-Time Analytics',
+            data: [200, 50, 30],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false,
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('productPerformanceChart').getContext('2d'),
+        type: 'pie',
+        data: {
+          labels: ['Best-Selling', 'Low-Stock', 'Returns'],
+          datasets: [{
+            label: 'Product Performance',
+            data: [60, 30, 10],
+            backgroundColor: ['rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('trafficSourcesChart').getContext('2d'),
+        type: 'pie',
+        data: {
+          labels: ['Organic', 'Paid Ads', 'Social Media'],
+          datasets: [{
+            label: 'Traffic Sources',
+            data: [45, 35, 20],
+            backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('orderManagementChart').getContext('2d'),
+        type: 'doughnut',
+        data: {
+          labels: ['Pending', 'Shipped', 'Delivered'],
+          datasets: [{
+            label: 'Order Management',
+            data: [20, 50, 30],
+            backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)'],
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('revenueBreakdownChart').getContext('2d'),
+        type: 'bar',
+        data: {
+          labels: ['Category A', 'Category B', 'Category C'],
+          datasets: [{
+            label: 'Revenue Breakdown',
+            data: [5000, 3000, 2000],
+            backgroundColor: 'rgba(255, 206, 86, 0.6)',
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('abandonedCartChart').getContext('2d'),
+        type: 'line',
+        data: {
+          labels: ['Lost Sales', 'Recovery Opportunities'],
+          datasets: [{
+            label: 'Abandoned Cart Tracking',
+            data: [150, 50],
+            borderColor: 'rgba(255, 99, 132, 1)',
+            fill: false,
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('marketingPerformanceChart').getContext('2d'),
+        type: 'bar',
+        data: {
+          labels: ['Campaigns', 'Promotions', 'Discount Codes'],
+          datasets: [{
+            label: 'Marketing Performance',
+            data: [70, 80, 60],
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('inventoryManagementChart').getContext('2d'),
+        type: 'doughnut',
+        data: {
+          labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+          datasets: [{
+            label: 'Inventory Management',
+            data: [50, 30, 20],
+            backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)'],
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('userRolesChart').getContext('2d'),
+        type: 'bar',
+        data: {
+          labels: ['Admin', 'Managers', 'Staff'],
+          datasets: [{
+            label: 'User Roles & Permissions',
+            data: [10, 20, 15],
+            backgroundColor: 'rgba(255, 206, 86, 0.6)',
+          }]
+        }
+      },
+      {
+        ctx: document.getElementById('exportReportingChart').getContext('2d'),
+        type: 'line',
+        data: {
+          labels: ['CSV', 'PDF', 'Excel'],
+          datasets: [{
+            label: 'Export & Reporting',
+            data: [30, 20, 25],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false,
+          }]
+        }
+      }
+    ];
+
+    // Create all charts
+    const charts = chartsData.map(chartData => {
+      return new Chart(chartData.ctx, {
+        type: chartData.type,
+        data: chartData.data,
+        options: commonOptions
+      });
+    });
+
+    // Add notification style
+    const style = document.createElement('style');
+    style.textContent = `
+      .notification {
+        position: absolute;
+        top: 100px;
+        right: 1322px;
+        background: var(--accent-blue);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

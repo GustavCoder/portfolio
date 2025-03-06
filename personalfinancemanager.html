@@ -1,0 +1,3313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceFlow | Personal Finance Manager</title>
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --secondary: #4ecdc4;
+            --dark: #1a1a2e;
+            --light: #f7f7f7;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --gray: #7c7c7c;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: #ffeb3b;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            color: #ffeb3b;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 15px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 3px;
+        }
+
+        .profile-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .menu-item:hover:not(.active) {
+            background-color: #f0f2f5;
+        }
+
+        .menu-item i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+
+        /* Stats Cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.income {
+            border-top: 4px solid var(--success);
+        }
+
+        .stat-card.expenses {
+            border-top: 4px solid var(--danger);
+        }
+
+        .stat-card.balance {
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card.savings {
+            border-top: 4px solid var(--warning);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-header h3 {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: rotate(15deg);
+        }
+
+        .income .stat-icon {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+        }
+
+        .expenses .stat-icon {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+
+        .balance .stat-icon {
+            background-color: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .savings .stat-icon {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        /* Charts and Reports */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .chart-actions select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background-color: #f7f7f7;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 250px;
+            background-color: #f5f7fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Recent Transactions */
+        .transactions {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+        }
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .transactions-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .view-all:hover {
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+
+        .transaction-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .transaction-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .shopping {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+        }
+
+        .food {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--warning);
+        }
+
+        .bills {
+            background-color: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .entertainment {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+
+        .transaction-details h4 {
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .transaction-details p {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+        }
+
+        .expense {
+            color: var(--danger);
+        }
+
+        .income {
+            color: var(--success);
+        }
+
+        /* Add Transaction Button */
+        .add-transaction {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .add-transaction:hover {
+            transform: scale(1.05) rotate(90deg);
+            background-color: #574dcf;
+        }
+
+        /* Goals Section */
+        .goals-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+        }
+
+        .goals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .goals-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .goal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .goal-card {
+            background-color: #f7f9fc;
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .goal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .goal-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .goal-card:hover .goal-icon {
+            transform: scale(1.1);
+        }
+
+        .vacation {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .car {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+
+        .emergency {
+            background-color: rgba(156, 39, 176, 0.2);
+            color: #9c27b0;
+        }
+
+        .goal-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .goal-progress {
+            margin: 15px 0;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-value {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+
+        .vacation .progress-value {
+            background-color: #ffc107;
+            width: 68%;
+        }
+
+        .car .progress-value {
+            background-color: #2196f3;
+            width: 45%;
+        }
+
+        .emergency .progress-value {
+            background-color: #9c27b0;
+            width: 90%;
+        }
+
+        .goal-date {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        /* Add Transaction Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 95%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .radio-option input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .radio-label {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option input:checked + .radio-label {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .radio-option:nth-child(1) input:checked + .radio-label {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        .radio-option:nth-child(2) input:checked + .radio-label {
+            background-color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #574dcf;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 99, 255, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        /* User Profile Modal */
+        #profileModal .modal-content {
+            max-width: 400px;
+        }
+
+        .profile-card {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .profile-card .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 20px;
+        }
+
+        .profile-card h2 {
+            margin-bottom: 5px;
+        }
+
+        .profile-card p {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-text {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .profile-action-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .profile-action-btn:hover {
+            background-color: #574dcf;
+        }
+
+        /* Transaction Detail Modal */
+        #transactionDetailModal .modal-content {
+            max-width: 450px;
+        }
+
+        .transaction-detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .transaction-detail-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 20px;
+        }
+
+        .transaction-detail-title h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .transaction-detail-title p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .transaction-detail-info {
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #574dcf;
+        }
+
+        .delete-btn {
+            background-color: #f7f7f7;
+            color: var(--danger);
+        }
+
+        .delete-btn:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+
+        /* Notifications panel */
+        .notifications-panel {
+            position: fixed;
+            top: 80px;
+            right: -350px;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 99;
+            transition: right 0.3s ease;
+        }
+
+        .notifications-panel.show {
+            right: 20px;
+        }
+
+        .notifications-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .notifications-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .notification-item.unread {
+            border-left: 3px solid var(--primary);
+        }
+
+        .notification-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .notification-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .notifications-footer {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+
+        .view-all-notifications {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Mobile menu overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 260px;
+            height: 100%;
+            background-color: white;
+            z-index: 102;
+            padding: 20px;
+            transition: left 0.3s ease;
+        }
+
+        .mobile-sidebar.show {
+            left: 0;
+        }
+
+        .close-mobile-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1rem;
+        }
+
+        .toast-success .toast-icon {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--success);
+        }
+
+        .toast-error .toast-icon {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+
+        .toast-info .toast-icon {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: #2196f3;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(108, 99, 255, 0.1);
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Confirmation Dialog */
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .confirm-dialog-content {
+            background-color: white;
+            width: 95%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .confirm-dialog-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .confirm-dialog-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .confirm-dialog-text {
+            color: var(--gray);
+            margin-bottom: 25px;
+        }
+
+        .confirm-dialog-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .confirm-dialog-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-yes {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .confirm-yes:hover {
+            background-color: #d32f2f;
+        }
+
+        .confirm-no {
+            background-color: #f7f7f7;
+            color: var(--dark);
+        }
+
+        .confirm-no:hover {
+            background-color: #ebebeb;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 992px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-card {
+                min-height: 300px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            nav {
+                display: none;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .goal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .add-transaction {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Dark mode toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 99;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #f1f1f1;
+        }
+
+        body.dark-mode .sidebar,
+        body.dark-mode .stat-card,
+        body.dark-mode .chart-card,
+        body.dark-mode .transactions,
+        body.dark-mode .goals-section,
+        body.dark-mode .modal-content,
+        body.dark-mode .notifications-panel,
+        body.dark-mode .mobile-sidebar,
+        body.dark-mode .toast,
+        body.dark-mode .confirm-dialog-content {
+            background-color: #1e1e1e;
+            color: #f1f1f1;
+        }
+
+        body.dark-mode .menu-item:hover:not(.active) {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-mode .transaction-item:hover,
+        body.dark-mode .notification-item:hover {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-mode .goal-card {
+            background-color: #252525;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .radio-label,
+        body.dark-mode .chart-actions select,
+        body.dark-mode .delete-btn,
+        body.dark-mode .confirm-no {
+            background-color: #2c2c2c;
+            color: #f1f1f1;
+            border-color: #444;
+        }
+
+        body.dark-mode .transaction-details p,
+        body.dark-mode .profile-info p,
+        body.dark-mode .notification-desc,
+        body.dark-mode .detail-label,
+        body.dark-mode .stat-header h3,
+        body.dark-mode .goal-date {
+            color: #aaa;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background-color: #2c2c2c;
+            color: #f1f1f1;
+        }
+
+        body.dark-mode .progress-bar {
+            background-color: #444;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* Section content styles */
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        /* Content for other sections */
+        .transactions-section-content,
+        .budgets-section-content,
+        .goals-section-content,
+        .reports-section-content,
+        .settings-section-content,
+        .help-section-content {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .transactions-section-content,
+        body.dark-mode .budgets-section-content,
+        body.dark-mode .goals-section-content,
+        body.dark-mode .reports-section-content,
+        body.dark-mode .settings-section-content,
+        body.dark-mode .help-section-content {
+            background-color: #1e1e1e;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        body.dark-mode .section-title {
+            color: #f1f1f1;
+        }
+
+        .section-description {
+            color: var(--gray);
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo" id="homeButton">Finance<span>Flow</span></div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+                        <li><a href="#" data-section="transactions">Transactions</a></li>
+                        <li><a href="#" data-section="budgets">Budgets</a></li>
+                        <li><a href="#" data-section="goals">Goals</a></li>
+                        <li><a href="#" data-section="reports">Reports</a></li>
+                    </ul>
+                </nav>
+                <div class="mobile-menu">☰</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="sidebar">
+                <div class="profile">
+                    <div class="profile-img" id="profileButton">JD</div>
+                    <div class="profile-info">
+                        <h3>John Doe</h3>
+                        <p>Premium Account</p>
+                    </div>
+                </div>
+                
+                <div class="menu-item active" data-section="dashboard">
+                    <i>📊</i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item" data-section="transactions">
+                    <i>💸</i>
+                    <span>Transactions</span>
+                </div>
+                <div class="menu-item" data-section="budgets">
+                    <i>📝</i>
+                    <span>Budgets</span>
+                </div>
+                <div class="menu-item" data-section="goals">
+                    <i>🎯</i>
+                    <span>Goals</span>
+                </div>
+                <div class="menu-item" data-section="reports">
+                    <i>📈</i>
+                    <span>Reports</span>
+                </div>
+                <div class="menu-item" data-section="settings">
+                    <i>⚙️</i>
+                    <span>Settings</span>
+                </div>
+                <div class="menu-item" data-section="help">
+                    <i>🔍</i>
+                    <span>Help & Support</span>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <!-- Dashboard Section Content -->
+                <div class="section-content active" id="dashboard-section">
+                    <div class="stats">
+                        <div class="stat-card income" id="incomeCard">
+                            <div class="stat-header">
+                                <h3>Income</h3>
+                                <div class="stat-icon">💰</div>
+                            </div>
+                            <div class="stat-value">$4,550</div>
+                            <div class="stat-change positive">
+                                <span>↑ 12.5% from last month</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card expenses" id="expensesCard">
+                            <div class="stat-header">
+                                <h3>Expenses</h3>
+                                <div class="stat-icon">💸</div>
+                            </div>
+                            <div class="stat-value">$2,870</div>
+                            <div class="stat-change negative">
+                                <span>↑ 8.2% from last month</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card balance" id="balanceCard">
+                            <div class="stat-header">
+                                <h3>Balance</h3>
+                                <div class="stat-icon">💼</div>
+                            </div>
+                            <div class="stat-value">$1,680</div>
+                            <div class="stat-change positive">
+                                <span>↑ 21.3% from last month</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card savings" id="savingsCard">
+                            <div class="stat-header">
+                                <h3>Savings</h3>
+                                <div class="stat-icon">🏦</div>
+                            </div>
+                            <div class="stat-value">$12,450</div>
+                            <div class="stat-change positive">
+                                <span>↑ 5.7% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Expense Breakdown</h3>
+                                <div class="chart-actions">
+                                    <select id="expenseChartPeriod">
+                                        <option value="month">This Month</option>
+                                        <option value="lastMonth">Last Month</option>
+                                        <option value="quarter">Last 3 Months</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-placeholder expense-chart">
+                                <canvas id="expenseChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Income vs Expenses</h3>
+                                <div class="chart-actions">
+                                    <select id="incomeChartPeriod">
+                                        <option value="year">This Year</option>
+                                        <option value="lastYear">Last Year</option>
+                                        <option value="halfYear">Last 6 Months</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-placeholder income-chart">
+                                <canvas id="incomeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="transactions">
+                        <div class="transactions-header">
+                            <h3>Recent Transactions</h3>
+                            <a href="#" class="view-all" id="viewAllTransactions">View All</a>
+                        </div>
+                        
+                        <div class="transaction-list">
+                            <div class="transaction-item" data-id="1">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon shopping">🛒</div>
+                                    <div class="transaction-details">
+                                        <h4>Grocery Shopping</h4>
+                                        <p>May 24, 2023 · 10:30 AM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$85.40</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="2">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon food">🍔</div>
+                                    <div class="transaction-details">
+                                        <h4>Restaurant Dinner</h4>
+                                        <p>May 22, 2023 · 8:15 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$62.30</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="3">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon bills">📱</div>
+                                    <div class="transaction-details">
+                                        <h4>Phone Bill</h4>
+                                        <p>May 20, 2023 · 3:45 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$45.99</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="4">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon entertainment">🎬</div>
+                                    <div class="transaction-details">
+                                        <h4>Movie Tickets</h4>
+                                        <p>May 19, 2023 · 7:30 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$24.50</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="5">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon shopping">👕</div>
+                                    <div class="transaction-details">
+                                        <h4>Clothing Store</h4>
+                                        <p>May 18, 2023 · 2:15 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$120.75</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="goals-section">
+                        <div class="goals-header">
+                            <h3>Savings Goals</h3>
+                            <a href="#" class="view-all" id="viewAllGoals">View All</a>
+                        </div>
+                        
+                        <div class="goal-grid">
+                            <div class="goal-card" data-id="1">
+                                <div class="goal-icon vacation">✈️</div>
+                                <div class="goal-info">
+                                    <h4>Summer Vacation</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$3,400 of $5,000</span>
+                                            <span>68%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value vacation"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: July 15, 2023</div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card" data-id="2">
+                                <div class="goal-icon car">🚗</div>
+                                <div class="goal-info">
+                                    <h4>New Car</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$9,000 of $20,000</span>
+                                            <span>45%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value car"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: December 1, 2023</div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card" data-id="3">
+                                <div class="goal-icon emergency">🛡️</div>
+                                <div class="goal-info">
+                                    <h4>Emergency Fund</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$9,000 of $10,000</span>
+                                            <span>90%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value emergency"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: Ongoing</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Section Content -->
+                <div class="section-content" id="transactions-section">
+                    <div class="transactions-section-content">
+                        <h2 class="section-title">All Transactions</h2>
+                        <p class="section-description">View and manage all your financial transactions in one place.</p>
+                        
+                        <div class="transaction-list">
+                            <div class="transaction-item" data-id="1">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon shopping">🛒</div>
+                                    <div class="transaction-details">
+                                        <h4>Grocery Shopping</h4>
+                                        <p>May 24, 2023 · 10:30 AM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$85.40</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="2">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon food">🍔</div>
+                                    <div class="transaction-details">
+                                        <h4>Restaurant Dinner</h4>
+                                        <p>May 22, 2023 · 8:15 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$62.30</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="3">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon bills">📱</div>
+                                    <div class="transaction-details">
+                                        <h4>Phone Bill</h4>
+                                        <p>May 20, 2023 · 3:45 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$45.99</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="4">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon entertainment">🎬</div>
+                                    <div class="transaction-details">
+                                        <h4>Movie Tickets</h4>
+                                        <p>May 19, 2023 · 7:30 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$24.50</div>
+                            </div>
+                            
+                            <div class="transaction-item" data-id="5">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon shopping">👕</div>
+                                    <div class="transaction-details">
+                                        <h4>Clothing Store</h4>
+                                        <p>May 18, 2023 · 2:15 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$120.75</div>
+                            </div>
+
+                            <div class="transaction-item" data-id="6">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon food">🥗</div>
+                                    <div class="transaction-details">
+                                        <h4>Lunch Meeting</h4>
+                                        <p>May 17, 2023 · 1:30 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$32.45</div>
+                            </div>
+
+                            <div class="transaction-item" data-id="7">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon bills">💡</div>
+                                    <div class="transaction-details">
+                                        <h4>Electricity Bill</h4>
+                                        <p>May 15, 2023 · 9:00 AM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$78.20</div>
+                            </div>
+
+                            <div class="transaction-item" data-id="8">
+                                <div class="transaction-info">
+                                    <div class="transaction-icon shopping">📚</div>
+                                    <div class="transaction-details">
+                                        <h4>Bookstore</h4>
+                                        <p>May 14, 2023 · 4:45 PM</p>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount expense">-$42.99</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budgets Section Content -->
+                <div class="section-content" id="budgets-section">
+                    <div class="budgets-section-content">
+                        <h2 class="section-title">Budget Management</h2>
+                        <p class="section-description">Set up and track your monthly budgets by category.</p>
+                        
+                        <div class="budget-list">
+                            <div class="goal-card">
+                                <div class="goal-icon shopping">🛒</div>
+                                <div class="goal-info">
+                                    <h4>Groceries</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$320 of $500</span>
+                                            <span>64%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value vacation" style="width: 64%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Monthly Budget</div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card">
+                                <div class="goal-icon food">🍔</div>
+                                <div class="goal-info">
+                                    <h4>Dining Out</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$180 of $200</span>
+                                            <span>90%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value emergency" style="width: 90%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Monthly Budget</div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card">
+                                <div class="goal-icon entertainment">🎬</div>
+                                <div class="goal-info">
+                                    <h4>Entertainment</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$75 of $150</span>
+                                            <span>50%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value car" style="width: 50%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Monthly Budget</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Section Content -->
+                <div class="section-content" id="goals-section">
+                    <div class="goals-section-content">
+                        <h2 class="section-title">Financial Goals</h2>
+                        <p class="section-description">Track and manage your long-term financial goals.</p>
+                        
+                        <div class="goal-grid">
+                            <div class="goal-card" data-id="1">
+                                <div class="goal-icon vacation">✈️</div>
+                                <div class="goal-info">
+                                    <h4>Summer Vacation</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$3,400 of $5,000</span>
+                                            <span>68%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value vacation"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: July 15, 2023</div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card" data-id="2">
+                                <div class="goal-icon car">🚗</div>
+                                <div class="goal-info">
+                                    <h4>New Car</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$9,000 of $20,000</span>
+                                            <span>45%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value car"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: December 1, 2023</div>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card" data-id="3">
+                                <div class="goal-icon emergency">🛡️</div>
+                                <div class="goal-info">
+                                    <h4>Emergency Fund</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$9,000 of $10,000</span>
+                                            <span>90%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value emergency"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: Ongoing</div>
+                                </div>
+                            </div>
+
+                            <div class="goal-card" data-id="4">
+                                <div class="goal-icon" style="background-color: rgba(76, 175, 80, 0.1); color: #4CAF50;">🏠</div>
+                                <div class="goal-info">
+                                    <h4>Home Down Payment</h4>
+                                    <div class="goal-progress">
+                                        <div class="progress-info">
+                                            <span>$15,000 of $50,000</span>
+                                            <span>30%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-value" style="background-color: #4CAF50; width: 30%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="goal-date">Target: January 1, 2025</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section Content -->
+                <div class="section-content" id="reports-section">
+                    <div class="reports-section-content">
+                        <h2 class="section-title">Financial Reports</h2>
+                        <p class="section-description">Analyze your financial data with detailed reports and insights.</p>
+                        
+                        <div class="charts-container">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3>Monthly Spending Trend</h3>
+                                    <div class="chart-actions">
+                                        <select id="spendingTrendPeriod">
+                                            <option value="sixMonths">Last 6 Months</option>
+                                            <option value="year">Last Year</option>
+                                            <option value="twoYears">Last 2 Years</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="chart-placeholder spending-trend-chart">
+                                    <canvas id="spendingTrendChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3>Category Analysis</h3>
+                                    <div class="chart-actions">
+                                        <select id="categoryAnalysisPeriod">
+                                            <option value="month">This Month</option>
+                                            <option value="quarter">This Quarter</option>
+                                            <option value="year">This Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="chart-placeholder category-analysis-chart">
+                                    <canvas id="categoryAnalysisChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section Content -->
+                <div class="section-content" id="settings-section">
+                    <div class="settings-section-content">
+                        <h2 class="section-title">Account Settings</h2>
+                        <p class="section-description">Manage your account preferences and settings.</p>
+                        
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" class="form-control" value="John Doe">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" class="form-control" value="john.doe@example.com">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="currency">Currency</label>
+                                <select id="currency" class="form-control">
+                                    <option value="USD" selected>USD ($)</option>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                    <option value="JPY">JPY (¥)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Theme</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="theme" id="light" value="light" checked>
+                                        <label for="light" class="radio-label">Light</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="theme" id="dark" value="dark">
+                                        <label for="dark" class="radio-label">Dark</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help & Support Section Content -->
+                <div class="section-content" id="help-section">
+                    <div class="help-section-content">
+                        <h2 class="section-title">Help & Support</h2>
+                        <p class="section-description">Get assistance with using FinanceFlow.</p>
+                        
+                        <div class="help-items">
+                            <div class="goal-card">
+                                <div class="goal-icon" style="background-color: rgba(33, 150, 243, 0.1); color: #2196F3;">📘</div>
+                                <div class="goal-info">
+                                    <h4>User Guide</h4>
+                                    <p style="margin-bottom: 15px;">Learn how to use all features of FinanceFlow with our comprehensive user guide.</p>
+                                    <button class="btn btn-primary">Read Guide</button>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card">
+                                <div class="goal-icon" style="background-color: rgba(156, 39, 176, 0.1); color: #9C27B0;">💬</div>
+                                <div class="goal-info">
+                                    <h4>Contact Support</h4>
+                                    <p style="margin-bottom: 15px;">Need help? Our support team is available 24/7 to assist you.</p>
+                                    <button class="btn btn-primary">Contact Us</button>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-card">
+                                <div class="goal-icon" style="background-color: rgba(76, 175, 80, 0.1); color: #4CAF50;">❓</div>
+                                <div class="goal-info">
+                                    <h4>FAQ</h4>
+                                    <p style="margin-bottom: 15px;">Find answers to commonly asked questions about FinanceFlow.</p>
+                                    <button class="btn btn-primary">View FAQs</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="add-transaction" id="addTransactionBtn">+</div>
+    <div class="dark-mode-toggle" id="darkModeToggle">🌙</div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-panel" id="notificationsPanel">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <span id="closeNotifications" style="cursor: pointer;">✕</span>
+        </div>
+        <div class="notifications-list">
+            <div class="notification-item unread">
+                <div class="notification-title">New Feature Available</div>
+                <div class="notification-desc">Try out our new budget forecasting tool!</div>
+                <div class="notification-time">2 hours ago</div>
+            </div>
+            <div class="notification-item unread">
+                <div class="notification-title">Budget Alert</div>
+                <div class="notification-desc">You've reached 85% of your dining budget</div>
+                <div class="notification-time">Yesterday</div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-title">Transaction Categorized</div>
+                <div class="notification-desc">We've categorized your recent transactions</div>
+                <div class="notification-time">3 days ago</div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-title">Goal Progress</div>
+                <div class="notification-desc">You're 75% toward your vacation goal!</div>
+                <div class="notification-time">1 week ago</div>
+            </div>
+        </div>
+        <div class="notifications-footer">
+            <a href="#" class="view-all-notifications">View All Notifications</a>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay and Sidebar -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <span class="close-mobile-menu" id="closeMobileMenu">✕</span>
+        <div class="profile">
+            <div class="profile-img">JD</div>
+            <div class="profile-info">
+                <h3>John Doe</h3>
+                <p>Premium Account</p>
+            </div>
+        </div>
+        
+        <div class="menu-item active" data-section="dashboard">
+            <i>📊</i>
+            <span>Dashboard</span>
+        </div>
+        <div class="menu-item" data-section="transactions">
+            <i>💸</i>
+            <span>Transactions</span>
+        </div>
+        <div class="menu-item" data-section="budgets">
+            <i>📝</i>
+            <span>Budgets</span>
+        </div>
+        <div class="menu-item" data-section="goals">
+            <i>🎯</i>
+            <span>Goals</span>
+        </div>
+        <div class="menu-item" data-section="reports">
+            <i>📈</i>
+            <span>Reports</span>
+        </div>
+        <div class="menu-item" data-section="settings">
+            <i>⚙️</i>
+            <span>Settings</span>
+        </div>
+        <div class="menu-item" data-section="help">
+            <i>🔍</i>
+            <span>Help & Support</span>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal" id="transactionModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeTransactionModal">&times;</span>
+            <h2 class="modal-title">Add New Transaction</h2>
+            
+            <form id="addTransactionForm">
+                <div class="form-group">
+                    <label>Transaction Type</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="type" id="income" value="income" checked>
+                            <label for="income" class="radio-label">Income</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="type" id="expense" value="expense">
+                            <label for="expense" class="radio-label">Expense</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="text" id="amount" name="amount" class="form-control" placeholder="Enter amount" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="form-control" required>
+                        <option value="">Select category</option>
+                        <option>Groceries</option>
+                        <option>Rent</option>
+                        <option>Utilities</option>
+                        <option>Transportation</option>
+                        <option>Entertainment</option>
+                        <option>Health</option>
+                        <option>Education</option>
+                        <option>Shopping</option>
+                        <option>Salary</option>
+                        <option>Investment</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input type="text" id="description" name="description" class="form-control" placeholder="Enter description" required>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="profile-card">
+                <div class="avatar">JD</div>
+                <h2>John Doe</h2>
+                <p>john.doe@example.com</p>
+                
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-num">42</div>
+                        <div class="stat-text">Transactions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num">3</div>
+                        <div class="stat-text">Goals</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num">5</div>
+                        <div class="stat-text">Budgets</div>
+                    </div>
+                </div>
+                
+                <button class="profile-action-btn">Edit Profile</button>
+                <button class="profile-action-btn">Account Settings</button>
+                <button class="profile-action-btn">Notification Preferences</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div class="modal" id="transactionDetailModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="transaction-detail-header">
+                <div class="transaction-detail-icon shopping">🛒</div>
+                <div class="transaction-detail-title">
+                    <h3>Grocery Shopping</h3>
+                    <p>Expense</p>
+                </div>
+            </div>
+            
+            <div class="transaction-detail-info">
+                <div class="detail-item">
+                    <div class="detail-label">Amount</div>
+                    <div class="detail-value expense">-$85.40</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Date</div>
+                    <div class="detail-value">May 24, 2023</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Time</div>
+                    <div class="detail-value">10:30 AM</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">Groceries</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Payment Method</div>
+                    <div class="detail-value">Credit Card</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Note</div>
+                    <div class="detail-value">Weekly grocery shopping at Whole Foods</div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn edit-btn" id="editTransactionBtn">Edit</button>
+                <button class="action-btn delete-btn" id="deleteTransactionBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div class="confirm-dialog" id="confirmDialog">
+        <div class="confirm-dialog-content">
+            <div class="confirm-dialog-icon">❗</div>
+            <div class="confirm-dialog-title">Delete Transaction?</div>
+            <div class="confirm-dialog-text">Are you sure you want to delete this transaction? This action cannot be undone.</div>
+            <div class="confirm-dialog-buttons">
+                <button class="confirm-dialog-btn confirm-yes" id="confirmYes">Yes, Delete</button>
+                <button class="confirm-dialog-btn confirm-no" id="confirmNo">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show loading spinner when page loads
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            loadingOverlay.classList.add('show');
+            
+            // Simulate loading time
+            setTimeout(() => {
+                loadingOverlay.classList.remove('show');
+                // Initialize dashboard after loading
+                initDashboard();
+            }, 800);
+            
+            function initDashboard() {
+                // Initialize charts
+                initCharts();
+                
+                // Set current date on transaction form
+                const dateInput = document.getElementById('date');
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+                
+                // Event listeners for all interactive elements
+                setupEventListeners();
+            }
+            
+            function setupEventListeners() {
+                // Modal handling
+                const addTransactionBtn = document.getElementById('addTransactionBtn');
+                const transactionModal = document.getElementById('transactionModal');
+                const closeTransactionModal = document.getElementById('closeTransactionModal');
+                const profileButton = document.getElementById('profileButton');
+                const profileModal = document.getElementById('profileModal');
+                const closeButtons = document.querySelectorAll('.close-modal');
+                
+                // Menu items
+                const menuItems = document.querySelectorAll('.menu-item');
+                const navLinks = document.querySelectorAll('nav ul li a');
+                
+                // Transaction list items
+                const transactionItems = document.querySelectorAll('.transaction-item');
+                const transactionDetailModal = document.getElementById('transactionDetailModal');
+                
+                // Transaction action buttons
+                const editTransactionBtn = document.getElementById('editTransactionBtn');
+                const deleteTransactionBtn = document.getElementById('deleteTransactionBtn');
+                const confirmDialog = document.getElementById('confirmDialog');
+                const confirmYes = document.getElementById('confirmYes');
+                const confirmNo = document.getElementById('confirmNo');
+                
+                // Chart selectors
+                const expenseChartPeriod = document.getElementById('expenseChartPeriod');
+                const incomeChartPeriod = document.getElementById('incomeChartPeriod');
+                
+                // Form submission
+                const addTransactionForm = document.getElementById('addTransactionForm');
+                
+                // Dark mode toggle
+                const darkModeToggle = document.getElementById('darkModeToggle');
+                
+                // Mobile menu
+                const mobileMenuBtn = document.querySelector('.mobile-menu');
+                const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+                const mobileSidebar = document.getElementById('mobileSidebar');
+                const closeMobileMenu = document.getElementById('closeMobileMenu');
+                
+                // View all links
+                const viewAllTransactions = document.getElementById('viewAllTransactions');
+                const viewAllGoals = document.getElementById('viewAllGoals');
+                
+                // Card click handlers
+                const statCards = document.querySelectorAll('.stat-card');
+                const goalCards = document.querySelectorAll('.goal-card');
+                
+                // Logo/Home button
+                const homeButton = document.getElementById('homeButton');
+                
+                // Profile action buttons
+                const profileActionButtons = document.querySelectorAll('.profile-action-btn');
+                
+                // Settings save button
+                const settingsSaveButton = document.querySelector('.settings-section-content .btn-primary');
+                
+                // Help section buttons
+                const helpButtons = document.querySelectorAll('.help-section-content .btn-primary');
+                
+                // Add transaction button click
+                addTransactionBtn.addEventListener('click', () => {
+                    transactionModal.style.display = 'flex';
+                    setTimeout(() => {
+                        transactionModal.classList.add('show');
+                    }, 10);
+                });
+                
+                // Profile button click
+                profileButton.addEventListener('click', () => {
+                    profileModal.style.display = 'flex';
+                    setTimeout(() => {
+                        profileModal.classList.add('show');
+                    }, 10);
+                });
+                
+                // Close modals when clicking X
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const modal = e.target.closest('.modal');
+                        modal.classList.remove('show');
+                        setTimeout(() => {
+                            modal.style.display = 'none';
+                        }, 300);
+                    });
+                });
+                
+                // Close modals when clicking outside
+                window.addEventListener('click', (e) => {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        if (e.target === modal) {
+                            modal.classList.remove('show');
+                            setTimeout(() => {
+                                modal.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                });
+                
+                // Function to update active section
+                function showSection(sectionName) {
+                    // Hide all sections
+                    document.querySelectorAll('.section-content').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // Show the selected section
+                    const targetSection = document.getElementById(sectionName + '-section');
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                    }
+                    
+                    // Update sidebar menu active state
+                    menuItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('data-section') === sectionName) {
+                            item.classList.add('active');
+                        }
+                    });
+                    
+                    // Update nav links active state
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('data-section') === sectionName) {
+                            link.classList.add('active');
+                        }
+                    });
+                    
+                    // If it's the reports section, initialize additional charts
+                    if (sectionName === 'reports') {
+                        initReportsCharts();
+                    }
+                }
+                
+                // Menu items click handler
+                menuItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const section = item.getAttribute('data-section');
+                        showSection(section);
+                        
+                        // If on mobile, close the sidebar after selection
+                        mobileSidebar.classList.remove('show');
+                        mobileMenuOverlay.classList.remove('show');
+                        
+                        // Show notification for clicked section
+                        showToast(`Navigated to ${section} section`, 'info');
+                    });
+                });
+                
+                // Mobile menu items click handler
+                document.querySelectorAll('#mobileSidebar .menu-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const section = item.getAttribute('data-section');
+                        showSection(section);
+                        
+                        // Close the sidebar
+                        mobileSidebar.classList.remove('show');
+                        mobileMenuOverlay.classList.remove('show');
+                        
+                        // Show notification for clicked section
+                        showToast(`Navigated to ${section} section`, 'info');
+                    });
+                });
+                
+                // Nav links click handler
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = link.getAttribute('data-section');
+                        showSection(section);
+                        
+                        // Show notification for clicked section
+                        showToast(`Navigated to ${section} section`, 'info');
+                    });
+                });
+                
+                // Transaction items click to show details
+                transactionItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const transactionId = item.getAttribute('data-id');
+                        // Update modal with transaction data (would normally fetch this from API)
+                        const transactionTitle = item.querySelector('.transaction-details h4').textContent;
+                        const transactionAmount = item.querySelector('.transaction-amount').textContent;
+                        const transactionDate = item.querySelector('.transaction-details p').textContent.split('·')[0].trim();
+                        const transactionTime = item.querySelector('.transaction-details p').textContent.split('·')[1].trim();
+                        
+                        // Update modal UI
+                        const detailTitle = document.querySelector('.transaction-detail-title h3');
+                        const detailAmount = document.querySelector('.detail-value.expense');
+                        const detailDate = document.querySelectorAll('.detail-value')[1];
+                        const detailTime = document.querySelectorAll('.detail-value')[2];
+                        
+                        detailTitle.textContent = transactionTitle;
+                        detailAmount.textContent = transactionAmount;
+                        detailDate.textContent = transactionDate;
+                        detailTime.textContent = transactionTime;
+                        
+                        // Show the modal
+                        transactionDetailModal.style.display = 'flex';
+                        setTimeout(() => {
+                            transactionDetailModal.classList.add('show');
+                        }, 10);
+                    });
+                });
+                
+                // Edit transaction button
+                editTransactionBtn.addEventListener('click', () => {
+                    // Close detail modal
+                    transactionDetailModal.classList.remove('show');
+                    setTimeout(() => {
+                        transactionDetailModal.style.display = 'none';
+                        
+                        // Open edit modal (reusing transaction modal)
+                        document.querySelector('.modal-title').textContent = 'Edit Transaction';
+                        document.querySelector('.btn-primary').textContent = 'Save Changes';
+                        
+                        // Populate form with transaction data
+                        const transactionTitle = document.querySelector('.transaction-detail-title h3').textContent;
+                        const transactionAmount = document.querySelector('.detail-value.expense').textContent.replace('-$', '');
+                        document.getElementById('expense').checked = true;
+                        document.getElementById('amount').value = transactionAmount;
+                        document.getElementById('description').value = transactionTitle;
+                        
+                        // Show the transaction modal
+                        transactionModal.style.display = 'flex';
+                        setTimeout(() => {
+                            transactionModal.classList.add('show');
+                        }, 10);
+                    }, 300);
+                });
+                
+                // Delete transaction button
+                deleteTransactionBtn.addEventListener('click', () => {
+                    confirmDialog.style.display = 'flex';
+                });
+                
+                // Confirm deletion
+                confirmYes.addEventListener('click', () => {
+                    confirmDialog.style.display = 'none';
+                    transactionDetailModal.classList.remove('show');
+                    setTimeout(() => {
+                        transactionDetailModal.style.display = 'none';
+                        showToast('Transaction deleted successfully', 'success');
+                    }, 300);
+                });
+                
+                // Cancel deletion
+                confirmNo.addEventListener('click', () => {
+                    confirmDialog.style.display = 'none';
+                });
+                
+                // Chart period selection
+                expenseChartPeriod.addEventListener('change', () => {
+                    updateExpenseChart(expenseChartPeriod.value);
+                });
+                
+                incomeChartPeriod.addEventListener('change', () => {
+                    updateIncomeChart(incomeChartPeriod.value);
+                });
+                
+                // Form submission
+                addTransactionForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    // Get form data
+                    const formData = new FormData(addTransactionForm);
+                    const type = formData.get('type');
+                    const amount = formData.get('amount');
+                    const category = formData.get('category');
+                    const description = formData.get('description');
+                    
+                    // Reset form and close modal
+                    addTransactionForm.reset();
+                    document.getElementById('date').value = today;
+                    
+                    transactionModal.classList.remove('show');
+                    setTimeout(() => {
+                        transactionModal.style.display = 'none';
+                        
+                        // Show success message
+                        showToast(`${type === 'income' ? 'Income' : 'Expense'} of $${amount} for ${description} added successfully!`, 'success');
+                        
+                        // Reset modal title and button text if they were changed
+                        document.querySelector('.modal-title').textContent = 'Add New Transaction';
+                        document.querySelector('.btn-primary').textContent = 'Add Transaction';
+                    }, 300);
+                });
+                
+                // Dark mode toggle
+                darkModeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    
+                    // Update radio button in settings
+                    if (document.body.classList.contains('dark-mode')) {
+                        document.getElementById('dark').checked = true;
+                        darkModeToggle.textContent = '☀️';
+                        showToast('Dark mode enabled', 'info');
+                    } else {
+                        document.getElementById('light').checked = true;
+                        darkModeToggle.textContent = '🌙';
+                        showToast('Light mode enabled', 'info');
+                    }
+                    
+                    // Update charts to match theme
+                    updateChartsTheme();
+                });
+                
+                // Settings theme radio buttons
+                document.getElementById('light').addEventListener('change', () => {
+                    document.body.classList.remove('dark-mode');
+                    darkModeToggle.textContent = '🌙';
+                    updateChartsTheme();
+                });
+                
+                document.getElementById('dark').addEventListener('change', () => {
+                    document.body.classList.add('dark-mode');
+                    darkModeToggle.textContent = '☀️';
+                    updateChartsTheme();
+                });
+                
+                // Mobile menu toggle
+                mobileMenuBtn.addEventListener('click', () => {
+                    mobileMenuOverlay.classList.add('show');
+                    mobileSidebar.classList.add('show');
+                });
+                
+                // Close mobile menu
+                closeMobileMenu.addEventListener('click', () => {
+                    mobileSidebar.classList.remove('show');
+                    mobileMenuOverlay.classList.remove('show');
+                });
+                
+                mobileMenuOverlay.addEventListener('click', () => {
+                    mobileSidebar.classList.remove('show');
+                    mobileMenuOverlay.classList.remove('show');
+                });
+                
+                // View all links
+                viewAllTransactions.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection('transactions');
+                    showToast('Navigated to all transactions', 'info');
+                });
+                
+                viewAllGoals.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection('goals');
+                    showToast('Navigated to all goals', 'info');
+                });
+                
+                // Stat card clicks
+                statCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const statType = card.classList[1]; // income, expenses, balance, or savings
+                        showToast(`Viewing detailed ${statType} report`, 'info');
+                    });
+                });
+                
+                // Goal card clicks
+                goalCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        const goalId = card.getAttribute('data-id');
+                        const goalName = card.querySelector('h4').textContent;
+                        showToast(`Viewing ${goalName} details`, 'info');
+                    });
+                });
+                
+                // Home button
+                homeButton.addEventListener('click', () => {
+                    showSection('dashboard');
+                    showToast('Returned to dashboard', 'info');
+                });
+                
+                // Setup notifications panel
+                setupNotifications();
+                
+                // Reports section chart period selectors
+                if (document.getElementById('spendingTrendPeriod')) {
+                    document.getElementById('spendingTrendPeriod').addEventListener('change', () => {
+                        updateSpendingTrendChart(document.getElementById('spendingTrendPeriod').value);
+                    });
+                }
+                
+                if (document.getElementById('categoryAnalysisPeriod')) {
+                    document.getElementById('categoryAnalysisPeriod').addEventListener('change', () => {
+                        updateCategoryAnalysisChart(document.getElementById('categoryAnalysisPeriod').value);
+                    });
+                }
+                
+                // Profile action buttons (Edit Profile, Account Settings, Notification Preferences)
+                profileActionButtons.forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        const actions = ['Edit Profile', 'Account Settings', 'Notification Preferences'];
+                        profileModal.classList.remove('show');
+                        
+                        setTimeout(() => {
+                            profileModal.style.display = 'none';
+                            
+                            if (index === 1) { // Account Settings button
+                                showSection('settings');
+                            }
+                            
+                            showToast(`${actions[index]} selected`, 'info');
+                        }, 300);
+                    });
+                });
+                
+                // Settings save button
+                settingsSaveButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Get form values
+                    const username = document.getElementById('username').value;
+                    const email = document.getElementById('email').value;
+                    const currency = document.getElementById('currency').value;
+                    
+                    showToast('Settings saved successfully', 'success');
+                    
+                    // Update profile name if changed
+                    if (username !== 'John Doe') {
+                        const initials = username.split(' ').map(name => name[0]).join('');
+                        document.querySelector('.profile-img').textContent = initials;
+                        document.querySelector('.profile-info h3').textContent = username;
+                        document.querySelector('.profile-card h2').textContent = username;
+                        document.querySelector('.profile-card p').textContent = email;
+                    }
+                });
+                
+                // Help section buttons (Read Guide, Contact Us, View FAQs)
+                helpButtons.forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        const actions = ['Read Guide', 'Contact Us', 'View FAQs'];
+                        showToast(`${actions[index]} action initiated`, 'info');
+                    });
+                });
+                
+                // View all notifications link
+                document.querySelector('.view-all-notifications').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    notificationsPanel.classList.remove('show');
+                    
+                    // Create a mock notifications list page
+                    showToast('All notifications page opened', 'info');
+                    
+                    // For demonstration, we could show a custom section
+                    const mainContent = document.querySelector('.main-content');
+                    const currentActive = document.querySelector('.section-content.active');
+                    currentActive.classList.remove('active');
+                    
+                    const notificationsSection = document.createElement('div');
+                    notificationsSection.className = 'section-content active';
+                    notificationsSection.id = 'notifications-full-section';
+                    notificationsSection.innerHTML = `
+                        <div class="transactions-section-content">
+                            <h2 class="section-title">All Notifications</h2>
+                            <p class="section-description">View and manage all your notifications.</p>
+                            
+                            <div class="notifications-list" style="max-height: none;">
+                                <div class="notification-item unread">
+                                    <div class="notification-title">New Feature Available</div>
+                                    <div class="notification-desc">Try out our new budget forecasting tool!</div>
+                                    <div class="notification-time">2 hours ago</div>
+                                </div>
+                                <div class="notification-item unread">
+                                    <div class="notification-title">Budget Alert</div>
+                                    <div class="notification-desc">You've reached 85% of your dining budget</div>
+                                    <div class="notification-time">Yesterday</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">Transaction Categorized</div>
+                                    <div class="notification-desc">We've categorized your recent transactions</div>
+                                    <div class="notification-time">3 days ago</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">Goal Progress</div>
+                                    <div class="notification-desc">You're 75% toward your vacation goal!</div>
+                                    <div class="notification-time">1 week ago</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">New Feature Update</div>
+                                    <div class="notification-desc">Monthly reports are now available</div>
+                                    <div class="notification-time">2 weeks ago</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">Security Alert</div>
+                                    <div class="notification-desc">We've detected a login from a new device</div>
+                                    <div class="notification-time">3 weeks ago</div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary" style="margin-top: 20px;" id="backFromNotifications">Back</button>
+                        </div>
+                    `;
+                    
+                    mainContent.appendChild(notificationsSection);
+                    
+                    // Add event listener for the back button
+                    document.getElementById('backFromNotifications').addEventListener('click', () => {
+                        notificationsSection.remove();
+                        document.getElementById('dashboard-section').classList.add('active');
+                        showToast('Returned to dashboard', 'info');
+                    });
+                    
+                    // Mark notifications as clicked
+                    notificationsSection.querySelectorAll('.notification-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            item.classList.remove('unread');
+                            const title = item.querySelector('.notification-title').textContent;
+                            showToast(`Opened notification: ${title}`, 'info');
+                        });
+                    });
+                });
+            }
+            
+            function setupNotifications() {
+                // Notification bell can be added to header
+                const notificationsBell = document.createElement('div');
+                notificationsBell.innerHTML = '🔔';
+                notificationsBell.style.marginLeft = '20px';
+                notificationsBell.style.fontSize = '1.3rem';
+                notificationsBell.style.cursor = 'pointer';
+                document.querySelector('.header-content').appendChild(notificationsBell);
+                
+                const notificationsPanel = document.getElementById('notificationsPanel');
+                const closeNotifications = document.getElementById('closeNotifications');
+                
+                notificationsBell.addEventListener('click', () => {
+                    notificationsPanel.classList.toggle('show');
+                });
+                
+                closeNotifications.addEventListener('click', () => {
+                    notificationsPanel.classList.remove('show');
+                });
+                
+                // Notification items click
+                const notificationItems = document.querySelectorAll('.notification-item');
+                notificationItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        item.classList.remove('unread');
+                        const title = item.querySelector('.notification-title').textContent;
+                        showToast(`Opened notification: ${title}`, 'info');
+                    });
+                });
+                
+                // View all notifications link
+                document.querySelector('.view-all-notifications').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    notificationsPanel.classList.remove('show');
+                    showToast('Viewing all notifications', 'info');
+                });
+            }
+            
+            function initCharts() {
+                // Expense breakdown chart
+                const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+                window.expenseChart = new Chart(expenseCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Housing', 'Food', 'Transportation', 'Entertainment', 'Utilities', 'Other'],
+                        datasets: [{
+                            data: [35, 20, 15, 10, 12, 8],
+                            backgroundColor: [
+                                '#6c63ff',
+                                '#4ecdc4',
+                                '#ff6b6b',
+                                '#ffe66d',
+                                '#4caf50',
+                                '#ff9800'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 15,
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw;
+                                        return `${label}: ${value}% ($${(value * 28.7).toFixed(2)})`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        }
+                    }
+                });
+                
+                // Income vs Expenses chart
+                const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+                window.incomeChart = new Chart(incomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [
+                            {
+                                label: 'Income',
+                                data: [4200, 3800, 5100, 4500, 4550, 0],
+                                backgroundColor: '#4caf50',
+                                borderRadius: 5
+                            },
+                            {
+                                label: 'Expenses',
+                                data: [3100, 2800, 3300, 3000, 2870, 0],
+                                backgroundColor: '#f44336',
+                                borderRadius: 5
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false,
+                                    color: document.body.classList.contains('dark-mode') ? '#333' : '#f0f0f0'
+                                },
+                                ticks: {
+                                    color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: document.body.classList.contains('dark-mode') ? '#333' : '#f0f0f0'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    },
+                                    color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    },
+                                    color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label || '';
+                                        const value = context.raw;
+                                        return `${label}: $${value}`;
+                                    }
+                                }
+                            }
+                        },
+                        barPercentage: 0.6,
+                        animation: {
+                            duration: 1000
+                        }
+                    }
+                });
+            }
+            
+            function initReportsCharts() {
+                // Only initialize if they don't exist already
+                if (!window.spendingTrendChart && document.getElementById('spendingTrendChart')) {
+                    // Spending Trend Chart
+                    const spendingTrendCtx = document.getElementById('spendingTrendChart').getContext('2d');
+                    window.spendingTrendChart = new Chart(spendingTrendCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Monthly Spending',
+                                data: [2950, 3100, 2850, 3200, 3000, 2870],
+                                borderColor: '#6c63ff',
+                                backgroundColor: 'rgba(108, 99, 255, 0.1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false,
+                                        color: document.body.classList.contains('dark-mode') ? '#333' : '#f0f0f0'
+                                    },
+                                    ticks: {
+                                        color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: document.body.classList.contains('dark-mode') ? '#333' : '#f0f0f0'
+                                    },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value;
+                                        },
+                                        color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.dataset.label || '';
+                                            const value = context.raw;
+                                            return `${label}: $${value}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                if (!window.categoryAnalysisChart && document.getElementById('categoryAnalysisChart')) {
+                    // Category Analysis Chart
+                    const categoryAnalysisCtx = document.getElementById('categoryAnalysisChart').getContext('2d');
+                    window.categoryAnalysisChart = new Chart(categoryAnalysisCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Housing', 'Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping'],
+                            datasets: [{
+                                label: 'Spending by Category',
+                                data: [950, 580, 420, 320, 350, 250],
+                                backgroundColor: [
+                                    '#6c63ff',
+                                    '#4ecdc4',
+                                    '#ff6b6b',
+                                    '#ffe66d',
+                                    '#4caf50',
+                                    '#ff9800'
+                                ],
+                                borderRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false,
+                                        color: document.body.classList.contains('dark-mode') ? '#333' : '#f0f0f0'
+                                    },
+                                    ticks: {
+                                        color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: document.body.classList.contains('dark-mode') ? '#333' : '#f0f0f0'
+                                    },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value;
+                                        },
+                                        color: document.body.classList.contains('dark-mode') ? '#f1f1f1' : '#1a1a2e'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.dataset.label || '';
+                                            const value = context.raw;
+                                            return `${label}: $${value}`;
+                                        }
+                                    }
+                                }
+                            },
+                            barPercentage: 0.7
+                        }
+                    });
+                }
+            }
+            
+            function updateExpenseChart(period) {
+                // Simulate different data for different time periods
+                let data;
+                
+                switch(period) {
+                    case 'month':
+                        data = [35, 20, 15, 10, 12, 8];
+                        break;
+                    case 'lastMonth':
+                        data = [30, 25, 10, 15, 12, 8];
+                        break;
+                    case 'quarter':
+                        data = [33, 22, 12, 12, 13, 8];
+                        break;
+                    default:
+                        data = [35, 20, 15, 10, 12, 8];
+                }
+                
+                // Update chart data
+                window.expenseChart.data.datasets[0].data = data;
+                window.expenseChart.update();
+                
+                showToast('Chart updated to ' + document.getElementById('expenseChartPeriod').options[document.getElementById('expenseChartPeriod').selectedIndex].text, 'info');
+            }
+            
+            function updateIncomeChart(period) {
+                // Simulate different data for different time periods
+                let incomeData, expenseData, labels;
+                
+                switch(period) {
+                    case 'year':
+                        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        incomeData = [4200, 3800, 5100, 4500, 4550, 0];
+                        expenseData = [3100, 2800, 3300, 3000, 2870, 0];
+                        break;
+                    case 'lastYear':
+                        labels = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        incomeData = [4000, 4200, 3900, 4300, 4100, 5000];
+                        expenseData = [2900, 3100, 2800, 3200, 3000, 3500];
+                        break;
+                    case 'halfYear':
+                        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        incomeData = [4200, 3800, 5100, 4500, 4550, 4800];
+                        expenseData = [3100, 2800, 3300, 3000, 2870, 3200];
+                        break;
+                    default:
+                        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        incomeData = [4200, 3800, 5100, 4500, 4550, 0];
+                        expenseData = [3100, 2800, 3300, 3000, 2870, 0];
+                }
+                
+                // Update chart data
+                window.incomeChart.data.labels = labels;
+                window.incomeChart.data.datasets[0].data = incomeData;
+                window.incomeChart.data.datasets[1].data = expenseData;
+                window.incomeChart.update();
+                
+                showToast('Chart updated to ' + document.getElementById('incomeChartPeriod').options[document.getElementById('incomeChartPeriod').selectedIndex].text, 'info');
+            }
+            
+            function updateSpendingTrendChart(period) {
+                if (!window.spendingTrendChart) return;
+                
+                // Simulate different data for different time periods
+                let data, labels;
+                
+                switch(period) {
+                    case 'sixMonths':
+                        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        data = [2950, 3100, 2850, 3200, 3000, 2870];
+                        break;
+                    case 'year':
+                        labels = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        data = [2800, 2950, 3100, 2900, 3050, 3200, 2950, 3100, 2850, 3200, 3000, 2870];
+                        break;
+                    case 'twoYears':
+                        labels = ['2022 H1', '2022 H2', '2023 H1', '2023 H2'];
+                        data = [17500, 18200, 18500, 19000];
+                        break;
+                    default:
+                        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                        data = [2950, 3100, 2850, 3200, 3000, 2870];
+                }
+                
+                // Update chart data
+                window.spendingTrendChart.data.labels = labels;
+                window.spendingTrendChart.data.datasets[0].data = data;
+                window.spendingTrendChart.update();
+                
+                showToast('Chart updated to ' + document.getElementById('spendingTrendPeriod').options[document.getElementById('spendingTrendPeriod').selectedIndex].text, 'info');
+            }
+            
+            function updateCategoryAnalysisChart(period) {
+                if (!window.categoryAnalysisChart) return;
+                
+                // Simulate different data for different time periods
+                let data;
+                
+                switch(period) {
+                    case 'month':
+                        data = [950, 580, 420, 320, 350, 250];
+                        break;
+                    case 'quarter':
+                        data = [2850, 1740, 1260, 960, 1050, 750];
+                        break;
+                    case 'year':
+                        data = [11400, 6960, 5040, 3840, 4200, 3000];
+                        break;
+                    default:
+                        data = [950, 580, 420, 320, 350, 250];
+                }
+                
+                // Update chart data
+                window.categoryAnalysisChart.data.datasets[0].data = data;
+                window.categoryAnalysisChart.update();
+                
+                showToast('Chart updated to ' + document.getElementById('categoryAnalysisPeriod').options[document.getElementById('categoryAnalysisPeriod').selectedIndex].text, 'info');
+            }
+            
+            function updateChartsTheme() {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                const textColor = isDarkMode ? '#f1f1f1' : '#1a1a2e';
+                const gridColor = isDarkMode ? '#333' : '#f0f0f0';
+                
+                // Update expense chart
+                if (window.expenseChart) {
+                    window.expenseChart.options.plugins.legend.labels.color = textColor;
+                    window.expenseChart.update();
+                }
+                
+                // Update income chart
+                if (window.incomeChart) {
+                    window.incomeChart.options.scales.x.ticks.color = textColor;
+                    window.incomeChart.options.scales.y.ticks.color = textColor;
+                    window.incomeChart.options.scales.x.grid.color = gridColor;
+                    window.incomeChart.options.scales.y.grid.color = gridColor;
+                    window.incomeChart.options.plugins.legend.labels.color = textColor;
+                    window.incomeChart.update();
+                }
+                
+                // Update spending trend chart
+                if (window.spendingTrendChart) {
+                    window.spendingTrendChart.options.scales.x.ticks.color = textColor;
+                    window.spendingTrendChart.options.scales.y.ticks.color = textColor;
+                    window.spendingTrendChart.options.scales.x.grid.color = gridColor;
+                    window.spendingTrendChart.options.scales.y.grid.color = gridColor;
+                    window.spendingTrendChart.update();
+                }
+                
+                // Update category analysis chart
+                if (window.categoryAnalysisChart) {
+                    window.categoryAnalysisChart.options.scales.x.ticks.color = textColor;
+                    window.categoryAnalysisChart.options.scales.y.ticks.color = textColor;
+                    window.categoryAnalysisChart.options.scales.x.grid.color = gridColor;
+                    window.categoryAnalysisChart.options.scales.y.grid.color = gridColor;
+                    window.categoryAnalysisChart.update();
+                }
+            }
+            
+            function showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer');
+                
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                // Set icon based on type
+                let icon;
+                switch(type) {
+                    case 'success':
+                        icon = '✓';
+                        break;
+                    case 'error':
+                        icon = '✕';
+                        break;
+                    case 'info':
+                    default:
+                        icon = 'ℹ';
+                }
+                
+                toast.innerHTML = `
+                    <div class="toast-icon">${icon}</div>
+                    <div class="toast-message">${message}</div>
+                `;
+                
+                // Add to container
+                toastContainer.appendChild(toast);
+                
+                // Show with animation
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+                
+                // Auto-hide after delay
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toastContainer.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

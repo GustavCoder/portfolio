@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Data Visualization Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --accent: #3498db;
+            --accent-light: #85c1e9;
+            --border: #e6e6e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --chart-colors: #3498db, #e74c3c, #2ecc71, #f39c12, #9b59b6, #1abc9c, #34495e, #e67e22;
+        }
+
+        .dark-mode {
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #a0aec0;
+            --accent: #63b3ed;
+            --accent-light: #4299e1;
+            --border: #4a5568;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --chart-colors: #63b3ed, #fc8181, #68d391, #f6ad55, #b794f4, #4fd1c5, #a0aec0, #f6ad55;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            box-shadow: 2px 0 5px var(--shadow);
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        .brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand svg {
+            fill: var(--accent);
+        }
+
+        .theme-switch {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-left: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--text-secondary);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--bg-secondary);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .filter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .filter-item {
+            margin-bottom: 1rem;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        select, input[type="date"], input[type="range"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        select:focus, input:focus {
+            outline: 2px solid var(--accent-light);
+        }
+
+        .apply-filters {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .apply-filters:hover {
+            background-color: var(--accent-light);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .time-range {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .time-btn {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-btn.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+        }
+
+        .dashboard-grid > div:nth-child(1) {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        }
+
+        .dashboard-grid > div:nth-child(2) {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+        }
+
+        .dashboard-grid > div:nth-child(3) {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+        }
+
+        .dashboard-grid > div:nth-child(4) {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+        }
+
+        .dashboard-grid > div:nth-child(5) {
+            grid-column: 1 / 3;
+            grid-row: 3 / 4;
+        }
+
+        .chart-container {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-action {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: color 0.2s;
+        }
+
+        .chart-action:hover {
+            color: var(--accent);
+        }
+
+        .chart {
+            width: 100%;
+            height: 300px;
+        }
+
+        .chart canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* D3 Specific Styles */
+        .d3-chart {
+            width: 100%;
+            height: 300px;
+        }
+
+        .d3-tooltip {
+            position: absolute;
+            padding: 10px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            box-shadow: 0 2px 5px var(--shadow);
+            z-index: 100;
+        }
+
+        .heatmap rect {
+            stroke: var(--bg-secondary);
+            stroke-width: 1px;
+        }
+
+        /* Loading and Error States */
+        .loading-overlay, .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(var(--bg-secondary-rgb), 0.8);
+            z-index: 20;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-grid > div {
+                grid-column: 1 / 2 !important;
+            }
+            
+            .dashboard-grid > div:nth-child(1) { grid-row: 1 / 2; }
+            .dashboard-grid > div:nth-child(2) { grid-row: 2 / 3; }
+            .dashboard-grid > div:nth-child(3) { grid-row: 3 / 4; }
+            .dashboard-grid > div:nth-child(4) { grid-row: 4 / 5; }
+            .dashboard-grid > div:nth-child(5) { grid-row: 5 / 6; }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .sidebar {
+                grid-column: 1 / 2;
+                grid-row: 1 / 2;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 1rem;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .main-content {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .time-range {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+            
+            .chart-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="brand">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm14 8V5H5v6h14zm0 2H5v6h14v-6zM7 7h2v2H7V7zm0 8h2v2H7v-2z"></path>
+                </svg>
+                <span>Data Hub</span>
+            </div>
+            
+            <div class="theme-switch">
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-title">Data Filters</div>
+                
+                <div class="filter-item">
+                    <label class="filter-label">Data Category</label>
+                    <select id="category-filter">
+                        <option value="all">All Categories</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="operations">Operations</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label class="filter-label">Region</label>
+                    <select id="region-filter">
+                        <option value="all">All Regions</option>
+                        <option value="north">North</option>
+                        <option value="south">South</option>
+                        <option value="east">East</option>
+                        <option value="west">West</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label class="filter-label">Date Range</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="date" id="date-start" value="2024-01-01">
+                        <input type="date" id="date-end" value="2024-12-31">
+                    </div>
+                </div>
+                
+                <div class="filter-item">
+                    <label class="filter-label">Data Threshold</label>
+                    <input type="range" id="threshold-filter" min="0" max="100" value="0">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                
+                <button class="apply-filters" id="apply-filters">Apply Filters</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="title">Performance Analytics Dashboard</div>
+                
+                <div class="time-range">
+                    <button class="time-btn" data-range="day">Day</button>
+                    <button class="time-btn" data-range="week">Week</button>
+                    <button class="time-btn active" data-range="month">Month</button>
+                    <button class="time-btn" data-range="quarter">Quarter</button>
+                    <button class="time-btn" data-range="year">Year</button>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <!-- Bar Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Revenue by Category</div>
+                        <div class="chart-actions">
+                            <button class="chart-action" data-action="download" title="Download Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                                </svg>
+                            </button>
+                            <button class="chart-action" data-action="refresh" title="Refresh Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <canvas id="bar-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Line Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Trend Analysis</div>
+                        <div class="chart-actions">
+                            <button class="chart-action" data-action="download" title="Download Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                                </svg>
+                            </button>
+                            <button class="chart-action" data-action="refresh" title="Refresh Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <canvas id="line-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Pie Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Market Distribution</div>
+                        <div class="chart-actions">
+                            <button class="chart-action" data-action="download" title="Download Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                                </svg>
+                            </button>
+                            <button class="chart-action" data-action="refresh" title="Refresh Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <canvas id="pie-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Scatter Plot (D3) -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Performance Correlation</div>
+                        <div class="chart-actions">
+                            <button class="chart-action" data-action="download" title="Download Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                                </svg>
+                            </button>
+                            <button class="chart-action" data-action="refresh" title="Refresh Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d3-chart" id="scatter-plot"></div>
+                </div>
+                
+                <!-- Heatmap (D3) -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Activity Heatmap</div>
+                        <div class="chart-actions">
+                            <button class="chart-action" data-action="download" title="Download Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                                </svg>
+                            </button>
+                            <button class="chart-action" data-action="refresh" title="Refresh Data">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d3-chart" id="heatmap"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Utility functions
+        const utils = {
+            formatNumber: (num) => {
+                return new Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                }).format(num);
+            },
+            
+            formatCurrency: (num) => {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(num);
+            },
+            
+            getRandomInt: (min, max) => {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            },
+            
+            getRandomArrayElement: (arr) => {
+                return arr[Math.floor(Math.random() * arr.length)];
+            },
+            
+            debounce: (func, delay) => {
+                let timeout;
+                return function() {
+                    const context = this;
+                    const args = arguments;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), delay);
+                };
+            },
+            
+            generateRandomData: (count, min, max) => {
+                return Array.from({ length: count }, () => utils.getRandomInt(min, max));
+            },
+            
+            generateTimeSeriesData: (days, baseValue, volatility) => {
+                let data = [];
+                let value = baseValue;
+                
+                for (let i = 0; i < days; i++) {
+                    value += utils.getRandomInt(-volatility, volatility);
+                    value = Math.max(value, 0); // Ensure value doesn't go negative
+                    
+                    const date = new Date();
+                    date.setDate(date.getDate() - (days - i));
+                    
+                    data.push({
+                        date: date,
+                        value: value
+                    });
+                }
+                
+                return data;
+            },
+            
+            showLoading: (containerId) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'loading-overlay';
+                loadingOverlay.innerHTML = '<div class="loading-spinner"></div><p>Loading data...</p>';
+                container.appendChild(loadingOverlay);
+                
+                return () => {
+                    if (loadingOverlay.parentNode) {
+                        loadingOverlay.parentNode.removeChild(loadingOverlay);
+                    }
+                };
+            },
+            
+            showError: (containerId, message) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const errorOverlay = document.createElement('div');
+                errorOverlay.className = 'error-overlay';
+                errorOverlay.innerHTML = `<div class="error-message">${message}</div>`;
+                container.appendChild(errorOverlay);
+                
+                return () => {
+                    if (errorOverlay.parentNode) {
+                        errorOverlay.parentNode.removeChild(errorOverlay);
+                    }
+                };
+            }
+        };
+
+        // Theme switching
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode', themeToggle.checked);
+            updateChartThemes();
+        });
+
+        // Time range buttons
+        const timeButtons = document.querySelectorAll('.time-btn');
+        timeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                timeButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+                // Update charts based on time range
+                const range = button.dataset.range;
+                updateChartsWithTimeRange(range);
+            });
+        });
+
+        // Mock data service - simulates fetching data from an API
+        const dataService = {
+            fetchBarChartData: (category = 'all', region = 'all', timeRange = 'month') => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            const categories = ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'];
+                            const values = utils.generateRandomData(categories.length, 1000, 50000);
+                            
+                            resolve({
+                                labels: categories,
+                                datasets: [{
+                                    label: 'Revenue',
+                                    data: values,
+                                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                                    borderColor: 'rgba(52, 152, 219, 1)',
+                                    borderWidth: 1
+                                }]
+                            });
+                        } catch (error) {
+                            reject('Error fetching bar chart data');
+                        }
+                    }, 600);
+                });
+            },
+            
+            fetchLineChartData: (timeRange = 'month') => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            let days, labels;
+                            
+                            switch(timeRange) {
+                                case 'day':
+                                    days = 24;
+                                    labels = Array.from({length: days}, (_, i) => `${i}:00`);
+                                    break;
+                                case 'week':
+                                    days = 7;
+                                    labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                                    break;
+                                case 'month':
+                                    days = 30;
+                                    labels = Array.from({length: days}, (_, i) => `${i+1}`);
+                                    break;
+                                case 'quarter':
+                                    days = 12;
+                                    labels = Array.from({length: days}, (_, i) => `Week ${i+1}`);
+                                    break;
+                                case 'year':
+                                    days = 12;
+                                    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                    break;
+                                default:
+                                    days = 30;
+                                    labels = Array.from({length: days}, (_, i) => `${i+1}`);
+                            }
+                            
+                            const series1 = utils.generateRandomData(days, 5000, 15000);
+                            const series2 = utils.generateRandomData(days, 3000, 10000);
+                            
+                            resolve({
+                                labels: labels,
+                                datasets: [
+                                    {
+                                        label: 'Revenue',
+                                        data: series1,
+                                        borderColor: 'rgba(52, 152, 219, 1)',
+                                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    },
+                                    {
+                                        label: 'Costs',
+                                        data: series2,
+                                        borderColor: 'rgba(231, 76, 60, 1)',
+                                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    }
+                                ]
+                            });
+                        } catch (error) {
+                            reject('Error fetching line chart data');
+                        }
+                    }, 700);
+                });
+            },
+            
+            fetchPieChartData: () => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            const labels = ['North', 'South', 'East', 'West', 'Central'];
+                            const data = utils.generateRandomData(labels.length, 10, 35);
+                            
+                            resolve({
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: [
+                                        'rgba(52, 152, 219, 0.8)',
+                                        'rgba(231, 76, 60, 0.8)',
+                                        'rgba(46, 204, 113, 0.8)',
+                                        'rgba(243, 156, 18, 0.8)',
+                                        'rgba(155, 89, 182, 0.8)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(52, 152, 219, 1)',
+                                        'rgba(231, 76, 60, 1)',
+                                        'rgba(46, 204, 113, 1)',
+                                        'rgba(243, 156, 18, 1)',
+                                        'rgba(155, 89, 182, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            });
+                        } catch (error) {
+                            reject('Error fetching pie chart data');
+                        }
+                    }, 500);
+                });
+            },
+            
+            fetchScatterPlotData: () => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            const dataPoints = 50;
+                            const data = [];
+                            
+                            for (let i = 0; i < dataPoints; i++) {
+                                const x = utils.getRandomInt(10, 100);
+                                // Generate y with some correlation to x plus random noise
+                                const y = x * 0.6 + utils.getRandomInt(-20, 20);
+                                const size = utils.getRandomInt(3, 15);
+                                const category = utils.getRandomArrayElement(['A', 'B', 'C', 'D']);
+                                
+                                data.push({
+                                    x: x,
+                                    y: Math.max(0, y), // Ensure no negative values
+                                    size: size,
+                                    category: category
+                                });
+                            }
+                            
+                            resolve(data);
+                        } catch (error) {
+                            reject('Error fetching scatter plot data');
+                        }
+                    }, 800);
+                });
+            },
+            
+            fetchHeatmapData: () => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                            const hours = Array.from({length: 24}, (_, i) => i);
+                            const data = [];
+                            
+                            for (let day of days) {
+                                for (let hour of hours) {
+                                    const value = utils.getRandomInt(0, 100);
+                                    data.push({
+                                        day: day,
+                                        hour: hour,
+                                        value: value
+                                    });
+                                }
+                            }
+                            
+                            resolve({
+                                data: data,
+                                days: days,
+                                hours: hours
+                            });
+                        } catch (error) {
+                            reject('Error fetching heatmap data');
+                        }
+                    }, 900);
+                });
+            }
+        };
+
+        // Chart creation and management
+        let charts = {};
+
+        function createBarChart() {
+            const removeLoading = utils.showLoading('bar-chart');
+            
+            dataService.fetchBarChartData()
+                .then(data => {
+                    removeLoading();
+                    
+                    const ctx = document.getElementById('bar-chart').getContext('2d');
+                    charts.barChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `Revenue: ${utils.formatCurrency(context.raw)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return utils.formatCurrency(value);
+                                        },
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                                    },
+                                    grid: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 1000,
+                                easing: 'easeOutQuart'
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    removeLoading();
+                    utils.showError('bar-chart', error);
+                });
+        }
+
+        function createLineChart() {
+            const removeLoading = utils.showLoading('line-chart');
+            
+            dataService.fetchLineChartData()
+                .then(data => {
+                    removeLoading();
+                    
+                    const ctx = document.getElementById('line-chart').getContext('2d');
+                    charts.lineChart = new Chart(ctx, {
+                        type: 'line',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.dataset.label}: ${utils.formatCurrency(context.raw)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return utils.formatCurrency(value);
+                                        },
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                                    },
+                                    grid: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            animations: {
+                                tension: {
+                                    duration: 1000,
+                                    easing: 'linear'
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    removeLoading();
+                    utils.showError('line-chart', error);
+                });
+        }
+
+        function createPieChart() {
+            const removeLoading = utils.showLoading('pie-chart');
+            
+            dataService.fetchPieChartData()
+                .then(data => {
+                    removeLoading();
+                    
+                    const ctx = document.getElementById('pie-chart').getContext('2d');
+                    charts.pieChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary')
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((value / total) * 100);
+                                            return `${label}: ${percentage}% (${value})`;
+                                        }
+                                    }
+                                }
+                            },
+                            animation: {
+                                animateRotate: true,
+                                animateScale: true
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    removeLoading();
+                    utils.showError('pie-chart', error);
+                });
+        }
+
+        function createScatterPlot() {
+            const removeLoading = utils.showLoading('scatter-plot');
+            
+            dataService.fetchScatterPlotData()
+                .then(data => {
+                    removeLoading();
+                    
+                    // Clear previous chart if exists
+                    d3.select("#scatter-plot").selectAll("*").remove();
+                    
+                    const width = document.getElementById('scatter-plot').clientWidth;
+                    const height = document.getElementById('scatter-plot').clientHeight;
+                    const margin = {top: 20, right: 30, bottom: 40, left: 50};
+                    const innerWidth = width - margin.left - margin.right;
+                    const innerHeight = height - margin.top - margin.bottom;
+                    
+                    // Create SVG
+                    const svg = d3.select("#scatter-plot")
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+                    
+                    // Create chart group
+                    const chart = svg.append("g")
+                        .attr("transform", `translate(${margin.left},${margin.top})`);
+                    
+                    // Create scales
+                    const xScale = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.x) * 1.1])
+                        .range([0, innerWidth]);
+                    
+                    const yScale = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.y) * 1.1])
+                        .range([innerHeight, 0]);
+                    
+                    const sizeScale = d3.scaleLinear()
+                        .domain([d3.min(data, d => d.size), d3.max(data, d => d.size)])
+                        .range([4, 15]);
+                    
+                    const colorScale = d3.scaleOrdinal()
+                        .domain(['A', 'B', 'C', 'D'])
+                        .range(['#3498db', '#e74c3c', '#2ecc71', '#f39c12']);
+                    
+                    // Create axes
+                    const xAxis = d3.axisBottom(xScale);
+                    const yAxis = d3.axisLeft(yScale);
+                    
+                    // Add x-axis
+                    chart.append("g")
+                        .attr("class", "x-axis")
+                        .attr("transform", `translate(0,${innerHeight})`)
+                        .call(xAxis)
+                        .selectAll("text")
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'));
+                    
+                    // Add y-axis
+                    chart.append("g")
+                        .attr("class", "y-axis")
+                        .call(yAxis)
+                        .selectAll("text")
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'));
+                    
+                    // Add axis labels
+                    chart.append("text")
+                        .attr("class", "x-axis-label")
+                        .attr("text-anchor", "middle")
+                        .attr("x", innerWidth / 2)
+                        .attr("y", innerHeight + margin.bottom - 5)
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-primary'))
+                        .text("Performance Score");
+                    
+                    chart.append("text")
+                        .attr("class", "y-axis-label")
+                        .attr("text-anchor", "middle")
+                        .attr("transform", `translate(${-margin.left + 15},${innerHeight / 2}) rotate(-90)`)
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-primary'))
+                        .text("Conversion Rate");
+                    
+                    // Create tooltip
+                    const tooltip = d3.select("body")
+                        .append("div")
+                        .attr("class", "d3-tooltip")
+                        .style("opacity", 0);
+                    
+                    // Add scatter points
+                    chart.selectAll(".scatter-point")
+                        .data(data)
+                        .enter()
+                        .append("circle")
+                        .attr("class", "scatter-point")
+                        .attr("cx", d => xScale(d.x))
+                        .attr("cy", d => yScale(d.y))
+                        .attr("r", 0) // Start with radius 0 for animation
+                        .attr("fill", d => colorScale(d.category))
+                        .attr("opacity", 0.7)
+                        .attr("stroke", "white")
+                        .attr("stroke-width", 1)
+                        .on("mouseover", function(event, d) {
+                            d3.select(this)
+                                .transition()
+                                .duration(300)
+                                .attr("opacity", 1)
+                                .attr("stroke-width", 2);
+                            
+                            tooltip.transition()
+                                .duration(200)
+                                .style("opacity", 0.9);
+                            
+                            tooltip.html(`
+                                <strong>Category:</strong> ${d.category}<br>
+                                <strong>Performance:</strong> ${d.x}<br>
+                                <strong>Conversion:</strong> ${d.y.toFixed(1)}%<br>
+                                <strong>Value:</strong> ${d.size}
+                            `)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                        })
+                        .on("mouseout", function() {
+                            d3.select(this)
+                                .transition()
+                                .duration(300)
+                                .attr("opacity", 0.7)
+                                .attr("stroke-width", 1);
+                            
+                            tooltip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        })
+                        .transition() // Add animation
+                        .duration(1000)
+                        .delay((d, i) => i * 10)
+                        .attr("r", d => sizeScale(d.size));
+                    
+                    // Add legend
+                    const legend = svg.append("g")
+                        .attr("class", "legend")
+                        .attr("transform", `translate(${width - margin.right - 100}, ${margin.top})`);
+                    
+                    const categories = ['A', 'B', 'C', 'D'];
+                    
+                    categories.forEach((category, i) => {
+                        const legendRow = legend.append("g")
+                            .attr("transform", `translate(0, ${i * 20})`);
+                        
+                        legendRow.append("circle")
+                            .attr("cx", 0)
+                            .attr("cy", 0)
+                            .attr("r", 6)
+                            .attr("fill", colorScale(category));
+                        
+                        legendRow.append("text")
+                            .attr("x", 10)
+                            .attr("y", 4)
+                            .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-primary'))
+                            .style("font-size", "12px")
+                            .text(`Category ${category}`);
+                    });
+                    
+                    // Add zoom capability
+                    const zoom = d3.zoom()
+                        .scaleExtent([0.5, 5])
+                        .on("zoom", (event) => {
+                            chart.attr("transform", event.transform);
+                            
+                            // Update axes during zoom
+                            chart.select(".x-axis").call(xAxis.scale(event.transform.rescaleX(xScale)));
+                            chart.select(".y-axis").call(yAxis.scale(event.transform.rescaleY(yScale)));
+                        });
+                    
+                    svg.call(zoom);
+                    
+                    // Add reset zoom button
+                    svg.append("rect")
+                        .attr("x", width - 70)
+                        .attr("y", height - 30)
+                        .attr("width", 60)
+                        .attr("height", 20)
+                        .attr("rx", 4)
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--accent'))
+                        .attr("cursor", "pointer")
+                        .on("click", function() {
+                            svg.transition()
+                                .duration(750)
+                                .call(zoom.transform, d3.zoomIdentity);
+                        });
+                    
+                    svg.append("text")
+                        .attr("x", width - 40)
+                        .attr("y", height - 17)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "white")
+                        .attr("font-size", "10px")
+                        .attr("pointer-events", "none")
+                        .text("Reset Zoom");
+                })
+                .catch(error => {
+                    removeLoading();
+                    utils.showError('scatter-plot', error);
+                });
+        }
+
+        function createHeatmap() {
+            const removeLoading = utils.showLoading('heatmap');
+            
+            dataService.fetchHeatmapData()
+                .then(({data, days, hours}) => {
+                    removeLoading();
+                    
+                    // Clear previous chart if exists
+                    d3.select("#heatmap").selectAll("*").remove();
+                    
+                    const width = document.getElementById('heatmap').clientWidth;
+                    const height = document.getElementById('heatmap').clientHeight;
+                    const margin = {top: 30, right: 30, bottom: 30, left: 40};
+                    const innerWidth = width - margin.left - margin.right;
+                    const innerHeight = height - margin.top - margin.bottom;
+                    
+                    // Create SVG
+                    const svg = d3.select("#heatmap")
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+                    
+                    // Create chart group
+                    const chart = svg.append("g")
+                        .attr("transform", `translate(${margin.left},${margin.top})`);
+                    
+                    // Create scales
+                    const xScale = d3.scaleBand()
+                        .domain(hours.map(h => h))
+                        .range([0, innerWidth])
+                        .padding(0.05);
+                    
+                    const yScale = d3.scaleBand()
+                        .domain(days)
+                        .range([0, innerHeight])
+                        .padding(0.05);
+                    
+                    const colorScale = d3.scaleSequential()
+                        .interpolator(d3.interpolateViridis)
+                        .domain([0, 100]);
+                    
+                    // Create axes
+                    const xAxis = d3.axisBottom(xScale)
+                        .tickValues(xScale.domain().filter((d, i) => !(i % 3))) // Show every 3rd hour
+                        .tickFormat(d => `${d}:00`);
+                    
+                    const yAxis = d3.axisLeft(yScale);
+                    
+                    // Add x-axis
+                    chart.append("g")
+                        .attr("class", "x-axis")
+                        .attr("transform", `translate(0,${innerHeight})`)
+                        .call(xAxis)
+                        .selectAll("text")
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'));
+                    
+                    // Add y-axis
+                    chart.append("g")
+                        .attr("class", "y-axis")
+                        .call(yAxis)
+                        .selectAll("text")
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'));
+                    
+                    // Create tooltip
+                    const tooltip = d3.select("body")
+                        .append("div")
+                        .attr("class", "d3-tooltip")
+                        .style("opacity", 0);
+                    
+                    // Add heatmap cells
+                    chart.selectAll(".heatmap-cell")
+                        .data(data)
+                        .enter()
+                        .append("rect")
+                        .attr("class", "heatmap-cell")
+                        .attr("x", d => xScale(d.hour))
+                        .attr("y", d => yScale(d.day))
+                        .attr("width", xScale.bandwidth())
+                        .attr("height", yScale.bandwidth())
+                        .attr("fill", d => colorScale(d.value))
+                        .attr("opacity", 0) // Start with opacity 0 for animation
+                        .on("mouseover", function(event, d) {
+                            d3.select(this)
+                                .attr("stroke", "white")
+                                .attr("stroke-width", 2);
+                            
+                            tooltip.transition()
+                                .duration(200)
+                                .style("opacity", 0.9);
+                            
+                            tooltip.html(`
+                                <strong>Day:</strong> ${d.day}<br>
+                                <strong>Time:</strong> ${d.hour}:00<br>
+                                <strong>Activity:</strong> ${d.value}%
+                            `)
+                                .style("left", (event.pageX + 10) + "px")
+                                .style("top", (event.pageY - 28) + "px");
+                        })
+                        .on("mouseout", function() {
+                            d3.select(this)
+                                .attr("stroke", "none");
+                            
+                            tooltip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        })
+                        .transition() // Add animation
+                        .duration(1000)
+                        .delay((d, i) => i * 5)
+                        .attr("opacity", 1);
+                    
+                    // Add title
+                    chart.append("text")
+                        .attr("x", innerWidth / 2)
+                        .attr("y", -10)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-primary'))
+                        .style("font-size", "14px")
+                        .text("Activity Level by Day and Hour");
+                    
+                    // Add color legend
+                    const legendWidth = 200;
+                    const legendHeight = 15;
+                    
+                    const legendX = innerWidth - legendWidth;
+                    const legendY = innerHeight + margin.bottom - legendHeight;
+                    
+                    // Create gradient for legend
+                    const defs = svg.append("defs");
+                    const linearGradient = defs.append("linearGradient")
+                        .attr("id", "heatmap-gradient")
+                        .attr("x1", "0%")
+                        .attr("y1", "0%")
+                        .attr("x2", "100%")
+                        .attr("y2", "0%");
+                    
+                    // Add color stops
+                    linearGradient.selectAll("stop")
+                        .data(d3.range(0, 1.01, 0.1))
+                        .enter()
+                        .append("stop")
+                        .attr("offset", d => d * 100 + "%")
+                        .attr("stop-color", d => colorScale(d * 100));
+                    
+                    // Draw legend rectangle with gradient
+                    chart.append("rect")
+                        .attr("x", legendX)
+                        .attr("y", legendY)
+                        .attr("width", legendWidth)
+                        .attr("height", legendHeight)
+                        .style("fill", "url(#heatmap-gradient)");
+                    
+                    // Add legend axis
+                    const legendScale = d3.scaleLinear()
+                        .domain([0, 100])
+                        .range([0, legendWidth]);
+                    
+                    const legendAxis = d3.axisBottom(legendScale)
+                        .ticks(5)
+                        .tickFormat(d => d + "%");
+                    
+                    chart.append("g")
+                        .attr("transform", `translate(${legendX},${legendY + legendHeight})`)
+                        .call(legendAxis)
+                        .selectAll("text")
+                        .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'));
+                })
+                .catch(error => {
+                    removeLoading();
+                    utils.showError('heatmap', error);
+                });
+        }
+
+        function updateChartThemes() {
+            // Update Chart.js charts
+            const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-primary');
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border');
+            
+            for (const chartName in charts) {
+                if (charts[chartName] instanceof Chart) {
+                    const chart = charts[chartName];
+                    
+                    // Update legend text color
+                    if (chart.options.plugins.legend) {
+                        chart.options.plugins.legend.labels.color = textColor;
+                    }
+                    
+                    // Update axis colors
+                    if (chart.options.scales) {
+                        if (chart.options.scales.y) {
+                            chart.options.scales.y.ticks.color = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+                            chart.options.scales.y.grid.color = gridColor;
+                        }
+                        
+                        if (chart.options.scales.x) {
+                            chart.options.scales.x.ticks.color = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+                            chart.options.scales.x.grid.color = gridColor;
+                        }
+                    }
+                    
+                    chart.update();
+                }
+            }
+            
+            // Update D3 visualizations
+            d3.selectAll(".x-axis text, .y-axis text")
+                .attr("fill", getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'));
+            
+            d3.selectAll(".x-axis-label, .y-axis-label")
+                .attr("fill", textColor);
+            
+            d3.selectAll(".legend text")
+                .attr("fill", textColor);
+        }
+
+        function updateChartsWithTimeRange(range) {
+            // Update bar chart
+            if (charts.barChart) {
+                const removeLoading = utils.showLoading('bar-chart');
+                
+                dataService.fetchBarChartData(undefined, undefined, range)
+                    .then(data => {
+                        removeLoading();
+                        
+                        charts.barChart.data = data;
+                        charts.barChart.update();
+                    })
+                    .catch(error => {
+                        removeLoading();
+                        utils.showError('bar-chart', error);
+                    });
+            }
+            
+            // Update line chart
+            if (charts.lineChart) {
+                const removeLoading = utils.showLoading('line-chart');
+                
+                dataService.fetchLineChartData(range)
+                    .then(data => {
+                        removeLoading();
+                        
+                        charts.lineChart.data = data;
+                        charts.lineChart.update();
+                    })
+                    .catch(error => {
+                        removeLoading();
+                        utils.showError('line-chart', error);
+                    });
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            createBarChart();
+            createLineChart();
+            createPieChart();
+            createScatterPlot();
+            createHeatmap();
+        }
+
+        // Add refresh functionality to chart action buttons
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.chart-action[data-action="refresh"]')) {
+                const container = event.target.closest('.chart-container');
+                const chartCanvas = container.querySelector('canvas');
+                
+                if (chartCanvas) {
+                    const chartId = chartCanvas.id;
+                    
+                    if (chartId === 'bar-chart') {
+                        const removeLoading = utils.showLoading('bar-chart');
+                        
+                        dataService.fetchBarChartData()
+                            .then(data => {
+                                removeLoading();
+                                
+                                charts.barChart.data = data;
+                                charts.barChart.update();
+                            })
+                            .catch(error => {
+                                removeLoading();
+                                utils.showError('bar-chart', error);
+                            });
+                    } else if (chartId === 'line-chart') {
+                        const removeLoading = utils.showLoading('line-chart');
+                        
+                        dataService.fetchLineChartData()
+                            .then(data => {
+                                removeLoading();
+                                
+                                charts.lineChart.data = data;
+                                charts.lineChart.update();
+                            })
+                            .catch(error => {
+                                removeLoading();
+                                utils.showError('line-chart', error);
+                            });
+                    } else if (chartId === 'pie-chart') {
+                        const removeLoading = utils.showLoading('pie-chart');
+                        
+                        dataService.fetchPieChartData()
+                            .then(data => {
+                                removeLoading();
+                                
+                                charts.pieChart.data = data;
+                                charts.pieChart.update();
+                            })
+                            .catch(error => {
+                                removeLoading();
+                                utils.showError('pie-chart', error);
+                            });
+                    }
+                } else {
+                    // D3 charts
+                    const d3Chart = container.querySelector('.d3-chart');
+                    
+                    if (d3Chart && d3Chart.id === 'scatter-plot') {
+                        createScatterPlot();
+                    } else if (d3Chart && d3Chart.id === 'heatmap') {
+                        createHeatmap();
+                    }
+                }
+            }
+        });
+
+        // Handle download functionality
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.chart-action[data-action="download"]')) {
+                const container = event.target.closest('.chart-container');
+                const chartTitle = container.querySelector('.chart-title').textContent;
+                const chartCanvas = container.querySelector('canvas');
+                
+                if (chartCanvas) {
+                    // For Chart.js charts - download as image
+                    const link = document.createElement('a');
+                    link.download = `${chartTitle.replace(/\s+/g, '-').toLowerCase()}.png`;
+                    link.href = chartCanvas.toDataURL('image/png');
+                    link.click();
+                } else {
+                    // For D3 charts - download as SVG
+                    const svgElement = container.querySelector('svg');
+                    if (svgElement) {
+                        const svgData = new XMLSerializer().serializeToString(svgElement);
+                        const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                        const svgUrl = URL.createObjectURL(svgBlob);
+                        
+                        const link = document.createElement('a');
+                        link.download = `${chartTitle.replace(/\s+/g, '-').toLowerCase()}.svg`;
+                        link.href = svgUrl;
+                        link.click();
+                        
+                        URL.revokeObjectURL(svgUrl);
+                    }
+                }
+            }
+        });
+
+        // Apply filters button functionality
+        document.getElementById('apply-filters').addEventListener('click', function() {
+            const category = document.getElementById('category-filter').value;
+            const region = document.getElementById('region-filter').value;
+            const dateStart = document.getElementById('date-start').value;
+            const dateEnd = document.getElementById('date-end').value;
+            const threshold = document.getElementById('threshold-filter').value;
+            
+            // Get active time range
+            const activeTimeButton = document.querySelector('.time-btn.active');
+            const timeRange = activeTimeButton ? activeTimeButton.dataset.range : 'month';
+            
+            // Update bar chart with filters
+            if (charts.barChart) {
+                const removeLoading = utils.showLoading('bar-chart');
+                
+                dataService.fetchBarChartData(category, region, timeRange)
+                    .then(data => {
+                        removeLoading();
+                        
+                        charts.barChart.data = data;
+                        charts.barChart.update();
+                    })
+                    .catch(error => {
+                        removeLoading();
+                        utils.showError('bar-chart', error);
+                    });
+            }
+            
+            // Update other charts as needed
+            // For demonstration purposes we're only filtering the bar chart
+        });
+
+        // Handle window resize to make charts responsive
+        window.addEventListener('resize', utils.debounce(() => {
+            for (const chartName in charts) {
+                if (charts[chartName] instanceof Chart) {
+                    charts[chartName].resize();
+                }
+            }
+            
+            // For D3 charts we need to redraw them
+            createScatterPlot();
+            createHeatmap();
+        }, 250));
+
+        // Initialize the dashboard on page load
+        document.addEventListener('DOMContentLoaded', initializeCharts);
+    </script>
+</body>
+</html>
